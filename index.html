@@ -150,9 +150,17 @@ td{padding:10px 14px;vertical-align:middle}
 .field-key{font-size:11.5px;color:var(--text-soft);flex-shrink:0}
 .field-val{font-size:12.5px;color:var(--text);text-align:right;font-weight:500}
 .field-val.empty{color:var(--text-muted);font-weight:400;font-style:italic}
-.entry-item{background:white;border:1px solid var(--border);border-radius:8px;padding:9px 12px;margin-bottom:7px;font-size:12.5px;line-height:1.7}
+.entry-item{background:white;border:1px solid var(--border);border-radius:8px;padding:11px 13px;margin-bottom:8px;font-size:12.5px;line-height:1.7;position:relative}
 .entry-item:last-child{margin-bottom:0}
-.entry-desc{font-size:12px;color:var(--text-mid)}
+.entry-title{font-size:12.5px;font-weight:600;color:var(--navy);margin-bottom:3px;padding-right:80px}
+.entry-meta{font-size:11px;color:var(--text-muted);font-family:'DM Mono',monospace;margin-bottom:5px}
+.entry-desc{font-size:12px;color:var(--text-mid);white-space:pre-wrap;line-height:1.75}
+.entry-actions{position:absolute;top:9px;right:10px;display:flex;gap:4px}
+.entry-act-btn{background:none;border:1px solid var(--border);border-radius:5px;cursor:pointer;font-size:11px;padding:2px 7px;color:var(--text-soft);transition:all 0.14s;font-family:'Noto Sans SC',sans-serif}
+.entry-act-btn:hover{background:var(--sky-pale);color:var(--sky);border-color:rgba(91,141,217,0.3)}
+.entry-act-btn.del:hover{background:var(--rose-pale);color:var(--rose);border-color:rgba(196,69,58,0.2)}
+.entry-add-btn{display:flex;align-items:center;gap:6px;padding:8px 12px;border:1.5px dashed var(--border);border-radius:8px;color:var(--text-muted);cursor:pointer;font-size:12.5px;transition:all 0.15s;margin-top:6px;background:none;width:100%;font-family:'Noto Sans SC',sans-serif}
+.entry-add-btn:hover{border-color:var(--sky);color:var(--sky);background:var(--sky-pale)}
 
 /* NOTES */
 .note-item{background:var(--surface2);border-left:3px solid var(--sky);border-radius:0 8px 8px 0;padding:10px 13px;margin-bottom:8px}
@@ -513,19 +521,19 @@ td{padding:10px 14px;vertical-align:middle}
 
       <div class="tab-content" id="tab-activities">
         <div class="mod-card" style="margin-bottom:12px">
-          <div class="mod-card-head"><div class="mod-icon" style="background:#fdefd9">🏆</div><div class="mod-title">竞赛经历</div><button class="mod-edit-btn" onclick="editModule('competition')">编辑</button></div>
+          <div class="mod-card-head"><div class="mod-icon" style="background:#fdefd9">🏆</div><div class="mod-title">竞赛经历</div></div>
           <div id="m-competition"></div>
         </div>
         <div class="mod-card" style="margin-bottom:12px">
-          <div class="mod-card-head"><div class="mod-icon" style="background:#fde8e7">💼</div><div class="mod-title">实习经历</div><button class="mod-edit-btn" onclick="editModule('internship')">编辑</button></div>
+          <div class="mod-card-head"><div class="mod-icon" style="background:#fde8e7">💼</div><div class="mod-title">实习经历</div></div>
           <div id="m-internship"></div>
         </div>
         <div class="mod-card" style="margin-bottom:12px">
-          <div class="mod-card-head"><div class="mod-icon" style="background:#e8f5ee">🔬</div><div class="mod-title">科研经历</div><button class="mod-edit-btn" onclick="editModule('research')">编辑</button></div>
+          <div class="mod-card-head"><div class="mod-icon" style="background:#e8f5ee">🔬</div><div class="mod-title">科研经历</div></div>
           <div id="m-research"></div>
         </div>
         <div class="mod-card">
-          <div class="mod-card-head"><div class="mod-icon" style="background:#ede8fa">✈️</div><div class="mod-title">交流交换</div><button class="mod-edit-btn" onclick="editModule('exchange')">编辑</button></div>
+          <div class="mod-card-head"><div class="mod-icon" style="background:#ede8fa">✈️</div><div class="mod-title">交流交换</div></div>
           <div id="m-exchange"></div>
         </div>
       </div>
@@ -657,9 +665,10 @@ function seasonBadge(season){
 
 // ══ RENDER TABLE ══
 function moduleCompleteness(s){
-  return ['education','language','competition','internship','research','exchange'].map(m=>{
-    const v=s[m]; if(!v) return 'empty';
-    return Object.values(v).some(x=>x&&x.trim()) ? 'filled' : 'empty';
+  return ['education','language','competition','internship','research','exchange'].map(function(m){
+    var v=s[m]; if(!v) return 'empty';
+    if(Array.isArray(v.entries)) return v.entries.length?'filled':'empty';
+    return Object.values(v).some(function(x){return x&&String(x).trim();}) ? 'filled' : 'empty';
   });
 }
 
@@ -815,9 +824,28 @@ function switchPTab(tab,el){
 }
 
 function fv(val){ return val&&val.trim()?`<span class="field-val">${val}</span>`:`<span class="field-val empty">未填写</span>`; }
-function tvToEntries(text){
-  if(!text||!text.trim()) return `<div style="font-size:12px;color:var(--text-muted);font-style:italic;padding:4px 0">暂未填写</div>`;
-  return text.split('\n').filter(l=>l.trim()).map(l=>`<div class="entry-item"><div class="entry-desc">${l.trim()}</div></div>`).join('');
+function migrateEntries(mod){
+  if(!mod) return [];
+  if(Array.isArray(mod.entries)) return mod.entries;
+  if(mod.text&&mod.text.trim()){
+    return mod.text.split('\n').filter(l=>l.trim()).map(l=>({title:l.trim(),date:'',detail:''}));
+  }
+  return [];
+}
+function renderEntryCards(entries,modKey){
+  const empty='<div style="font-size:12px;color:var(--text-muted);font-style:italic;padding:4px 0">暂未填写，点击下方添加</div>';
+  if(!entries.length) return empty;
+  return entries.map((e,i)=>
+    '<div class="entry-item">'+
+    '<div class="entry-actions">'+
+    '<button class="entry-act-btn" onclick="editEntry(\''+modKey+'\','+i+')">编辑</button>'+
+    '<button class="entry-act-btn del" onclick="deleteEntry(\''+modKey+'\','+i+')">删除</button>'+
+    '</div>'+
+    (e.title?'<div class="entry-title">'+e.title+'</div>':'')+
+    (e.date?'<div class="entry-meta">'+e.date+'</div>':'')+
+    (e.detail?'<div class="entry-desc">'+e.detail+'</div>':'')+
+    '</div>'
+  ).join('');
 }
 
 function renderOverview(s){
@@ -847,10 +875,44 @@ function renderLanguage(s){
 }
 
 function renderActivities(s){
-  document.getElementById('m-competition').innerHTML=tvToEntries(s.competition?.text);
-  document.getElementById('m-internship').innerHTML=tvToEntries(s.internship?.text);
-  document.getElementById('m-research').innerHTML=tvToEntries(s.research?.text);
-  document.getElementById('m-exchange').innerHTML=tvToEntries(s.exchange?.text);
+  ['competition','internship','research','exchange'].forEach(function(mod){
+    var el=document.getElementById('m-'+mod); if(!el) return;
+    var entries=migrateEntries(s[mod]);
+    el.innerHTML=renderEntryCards(entries,mod)+
+      '<button class="entry-add-btn" onclick="addEntry(\''+mod+'\')">＋ 添加一条经历</button>';
+  });
+}
+let _entryMod='',_entryIdx=-1;
+function addEntry(mod){ openEntryModal(mod,-1,{title:'',date:'',detail:''}); }
+function editEntry(mod,idx){
+  var s=students.find(function(x){return x.id===currentId;}); if(!s) return;
+  var entries=migrateEntries(s[mod]);
+  openEntryModal(mod,idx,entries[idx]||{title:'',date:'',detail:''});
+}
+function deleteEntry(mod,idx){
+  var s=students.find(function(x){return x.id===currentId;}); if(!s) return;
+  var entries=migrateEntries(s[mod]);
+  entries.splice(idx,1);
+  s[mod]={entries:entries};
+  s.updatedAt=Date.now(); save(); renderActivities(s); renderTable();
+  showToast('已删除');
+}
+function openEntryModal(mod,idx,entry){
+  _entryMod=mod; _entryIdx=idx;
+  var labels={competition:'竞赛经历',internship:'实习经历',research:'科研经历',exchange:'交流交换'};
+  document.getElementById('edit-modal-title').textContent=(idx===-1?'添加':'编辑')+labels[mod];
+  var safeTitle=(entry.title||'').replace(/"/g,'&quot;');
+  var safeDate=(entry.date||'').replace(/"/g,'&quot;');
+  document.getElementById('edit-modal-body').innerHTML=
+    '<div class="emod-group"><div class="emod-label">标题（机构 / 赛事 / 项目名称）</div>'+
+    '<input class="emod-input" id="em-entry-title" value="'+safeTitle+'" placeholder="例：腾讯科技 · 产品运营实习生"></div>'+
+    '<div class="emod-group" style="margin-top:10px"><div class="emod-label">时间</div>'+
+    '<input class="emod-input" id="em-entry-date" value="'+safeDate+'" placeholder="例：2024年6月 – 8月"></div>'+
+    '<div class="emod-group" style="margin-top:10px"><div class="emod-label">详细描述（可多行）</div>'+
+    '<textarea class="emod-textarea" id="em-entry-detail" style="min-height:140px" placeholder="详细描述经历内容，越详细越好，AI 润色时会用到…">'+
+    (entry.detail||'')+'</textarea></div>';
+  editingModule='__entry__';
+  document.getElementById('edit-modal').classList.add('open');
 }
 
 // ══ FILES ══
@@ -1062,9 +1124,7 @@ function editModule(mod){
         </div>
       </div>`;
   } else {
-    const textMap={competition:'竞赛经历',internship:'实习经历',research:'科研经历',exchange:'交流交换'};
-    const val=s[mod]?.text||'';
-    body.innerHTML=`<div class="emod-group"><div class="emod-label">${textMap[mod]}（每行一条记录）</div><textarea class="emod-textarea" id="em-text" style="min-height:160px">${val}</textarea></div>`;
+    body.innerHTML='';
   }
   document.getElementById('edit-modal').classList.add('open');
 }
@@ -1083,8 +1143,22 @@ function saveModuleEdit(){
     s.gender=document.getElementById('em-gender').value;
     s.contact=document.getElementById('em-contact').value.trim();
     s.season=document.getElementById('em-season-basic').value;
+  } else if(mod==='__entry__'){
+    var s2=students.find(function(x){return x.id===currentId;}); if(!s2) return;
+    var entries=migrateEntries(s2[_entryMod]);
+    var entry={
+      title:document.getElementById('em-entry-title').value.trim(),
+      date:document.getElementById('em-entry-date').value.trim(),
+      detail:document.getElementById('em-entry-detail').value.trim(),
+    };
+    if(_entryIdx===-1) entries.push(entry); else entries[_entryIdx]=entry;
+    s2[_entryMod]={entries:entries};
+    s2.updatedAt=Date.now(); save(); closeEditModal();
+    renderActivities(s2); renderTable(); renderPanelHero(s2);
+    showToast('\u2713 \u5df2\u4fdd\u5b58');
+    return;
   } else {
-    s[mod]={ text:document.getElementById('em-text').value.trim() };
+    // no-op for removed mods
   }
   s.updatedAt=Date.now(); save(); closeEditModal();
   renderPanelHero(s);
@@ -1112,10 +1186,18 @@ function buildStudentContext(s){
   const lang=s.language||{};
   const langItems=[lang.ielts&&`雅思：${lang.ielts}`,lang.toefl&&`托福：${lang.toefl}`,lang.cet&&`四六级：${lang.cet}`,lang.gre&&`GRE/GMAT：${lang.gre}`].filter(Boolean);
   if(langItems.length) lines.push(`\n【语言成绩】\n`+langItems.join('\n'));
-  if(s.competition?.text) lines.push(`\n【竞赛经历】\n${s.competition.text}`);
-  if(s.internship?.text) lines.push(`\n【实习经历】\n${s.internship.text}`);
-  if(s.research?.text) lines.push(`\n【科研经历】\n${s.research.text}`);
-  if(s.exchange?.text) lines.push(`\n【交流交换】\n${s.exchange.text}`);
+  var fmtAct=function(mod,label){
+    var entries=migrateEntries(s[mod]); if(!entries.length) return;
+    lines.push('\n【'+label+'】');
+    entries.forEach(function(e){
+      if(e.title) lines.push(e.title+(e.date?' / '+e.date:''));
+      if(e.detail) lines.push(e.detail);
+    });
+  };
+  fmtAct('competition','竞赛经历');
+  fmtAct('internship','实习经历');
+  fmtAct('research','科研经历');
+  fmtAct('exchange','交流交换');
   return lines.join('\n');
 }
 
@@ -1323,10 +1405,10 @@ function exportExcel(){
     s.name, s.gender||'', s.contact||'', s.season||'', s.target||'',
     s.education?.school||'', s.education?.major||'', s.education?.grade||'', s.education?.gpa||'', s.education?.rank||'',
     s.language?.ielts||'', s.language?.toefl||'', s.language?.cet||'', s.language?.gre||'',
-    (s.competition?.text||'').replace(/\n/g,'|'),
-    (s.internship?.text||'').replace(/\n/g,'|'),
-    (s.research?.text||'').replace(/\n/g,'|'),
-    (s.exchange?.text||'').replace(/\n/g,'|'),
+    migrateEntries(s.competition).map(function(e){return [e.title,e.date,e.detail].filter(Boolean).join(' | ');}).join(' // '),
+    migrateEntries(s.internship).map(function(e){return [e.title,e.date,e.detail].filter(Boolean).join(' | ');}).join(' // '),
+    migrateEntries(s.research).map(function(e){return [e.title,e.date,e.detail].filter(Boolean).join(' | ');}).join(' // '),
+    migrateEntries(s.exchange).map(function(e){return [e.title,e.date,e.detail].filter(Boolean).join(' | ');}).join(' // '),
     (s.notes||[]).length,
     s.notes?.length ? new Date(s.notes[s.notes.length-1].date).toLocaleDateString('zh-CN') : '',
     (s.todos||[]).filter(t=>!t.done).length,
