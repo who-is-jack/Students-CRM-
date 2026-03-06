@@ -1,0 +1,1355 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>留学规划 · 学生档案系统 v2</title>
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;600;700&family=DM+Mono:ital,wght@0,400;0,500;1,400&family=Noto+Sans+SC:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --navy: #0f1f3d;
+  --navy-mid: #1a3260;
+  --navy-light: #2a4a8a;
+  --steel: #3a5a9a;
+  --sky: #5b8dd9;
+  --sky-pale: #d6e4f7;
+  --gold: #c4992a;
+  --gold-pale: #fdf3dc;
+  --sage: #3a7a5a;
+  --sage-pale: #dff0e8;
+  --rose: #c4453a;
+  --rose-pale: #fde8e7;
+  --lavender: #6a5acd;
+  --lavender-pale: #ede8fa;
+  --amber: #d4772a;
+  --amber-pale: #fdefd9;
+  --bg: #f0f4fb;
+  --surface: #ffffff;
+  --surface2: #f7f9fd;
+  --border: #dce5f5;
+  --text: #0f1f3d;
+  --text-mid: #3a4f70;
+  --text-soft: #6a7f9a;
+  --text-muted: #9aafca;
+  --r: 10px;
+  --shadow-sm: 0 1px 4px rgba(15,31,61,0.07);
+  --shadow-md: 0 4px 20px rgba(15,31,61,0.10);
+  --shadow-lg: 0 12px 48px rgba(15,31,61,0.15);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Noto Sans SC',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;font-size:13px;line-height:1.6}
+
+/* SIDEBAR */
+.sidebar{width:232px;min-height:100vh;background:var(--navy);position:fixed;top:0;left:0;display:flex;flex-direction:column;z-index:100;overflow:hidden}
+.sidebar::before{content:'';position:absolute;top:-60px;right:-60px;width:200px;height:200px;background:radial-gradient(circle,rgba(91,141,217,0.15) 0%,transparent 70%);pointer-events:none}
+.logo-wrap{padding:28px 24px 22px;border-bottom:1px solid rgba(255,255,255,0.07)}
+.logo-en{font-family:'Lora',serif;font-size:13px;font-weight:600;color:var(--sky);letter-spacing:0.14em;text-transform:uppercase;margin-bottom:4px}
+.logo-cn{font-size:18px;font-weight:600;color:#e8eef8;letter-spacing:0.06em}
+.logo-tag{font-family:'DM Mono',monospace;font-size:9.5px;color:rgba(232,238,248,0.28);letter-spacing:0.12em;margin-top:5px}
+.nav{padding:14px 0;flex:1}
+.nav-group{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:0.18em;color:rgba(232,238,248,0.25);padding:10px 24px 5px;text-transform:uppercase}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 24px;color:rgba(232,238,248,0.50);cursor:pointer;transition:all 0.17s;font-size:13px;border-left:2px solid transparent;user-select:none}
+.nav-item:hover{color:#e8eef8;background:rgba(91,141,217,0.08)}
+.nav-item.active{color:#e8eef8;border-left-color:var(--sky);background:rgba(91,141,217,0.14)}
+.nav-ico{font-size:14px}
+.nav-pill{margin-left:auto;font-family:'DM Mono',monospace;font-size:10px;background:rgba(91,141,217,0.18);color:var(--sky);padding:1px 8px;border-radius:99px}
+.sidebar-bottom{padding:14px 24px 20px;border-top:1px solid rgba(255,255,255,0.07);font-family:'DM Mono',monospace;font-size:10px;color:rgba(232,238,248,0.22);line-height:1.8}
+
+/* MAIN */
+.main{margin-left:232px;flex:1;display:flex;flex-direction:column;min-height:100vh}
+.topbar{height:58px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 28px;gap:12px;position:sticky;top:0;z-index:50;box-shadow:var(--shadow-sm)}
+.topbar-title{font-family:'Lora',serif;font-size:16px;font-weight:600;color:var(--navy)}
+.topbar-count{font-family:'DM Mono',monospace;font-size:11px;color:var(--text-soft);background:var(--bg);border:1px solid var(--border);padding:2px 10px;border-radius:99px}
+.search-wrap{margin-left:auto;display:flex;align-items:center;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:6px 12px;gap:8px;width:200px;transition:border-color 0.15s}
+.search-wrap:focus-within{border-color:var(--sky)}
+.search-wrap input{border:none;background:none;outline:none;font-size:13px;color:var(--text);font-family:'Noto Sans SC',sans-serif;width:100%}
+.search-wrap input::placeholder{color:var(--text-muted)}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 15px;border-radius:8px;font-size:13px;font-family:'Noto Sans SC',sans-serif;cursor:pointer;border:none;font-weight:500;transition:all 0.17s;white-space:nowrap}
+.btn-primary{background:var(--navy-mid);color:white}.btn-primary:hover{background:var(--navy-light)}
+.btn-sky{background:var(--sky);color:white}.btn-sky:hover{background:#4a7cc8}
+.btn-ghost{background:transparent;color:var(--text-mid);border:1px solid var(--border)}.btn-ghost:hover{background:var(--bg)}
+.btn-sm{padding:5px 11px;font-size:12px}
+.btn-danger{background:var(--rose-pale);color:var(--rose);border:1px solid rgba(196,69,58,0.2)}.btn-danger:hover{background:#fbd5d3}
+.btn-green{background:var(--sage-pale);color:var(--sage);border:1px solid rgba(58,122,90,0.2)}.btn-green:hover{background:#c8e8d5}
+
+.content{padding:24px 28px;flex:1}
+.view{display:none}.view.active{display:block}
+
+/* STATS */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px 20px;display:flex;flex-direction:column;gap:2px;box-shadow:var(--shadow-sm)}
+.stat-label{font-family:'DM Mono',monospace;font-size:9.5px;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);margin-bottom:4px}
+.stat-val{font-family:'Lora',serif;font-size:30px;font-weight:700;color:var(--navy)}
+.stat-sub{font-size:11px;color:var(--text-soft)}
+
+/* TABLE */
+.list-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow-sm)}
+.list-head{padding:13px 20px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border);background:var(--surface2);flex-wrap:wrap;gap:8px}
+.list-head-title{font-family:'Lora',serif;font-size:14px;font-weight:600;color:var(--navy)}
+.filter-tabs{display:flex;gap:4px;flex-wrap:wrap}
+.ftab{padding:4px 11px;border-radius:6px;font-size:12px;cursor:pointer;color:var(--text-soft);border:1px solid transparent;transition:all 0.14s}
+.ftab:hover{color:var(--text)}
+.ftab.active{background:var(--sky-pale);color:var(--steel);border-color:rgba(91,141,217,0.25)}
+/* Season tabs — gold tones */
+.ftab.season.active{background:var(--gold-pale);color:var(--gold);border-color:rgba(196,153,42,0.3)}
+
+table{width:100%;border-collapse:collapse}
+thead th{text-align:left;padding:9px 14px;font-family:'DM Mono',monospace;font-size:9.5px;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);background:var(--surface2);border-bottom:1px solid var(--border)}
+tbody tr{border-bottom:1px solid var(--border);cursor:pointer;transition:background 0.13s}
+tbody tr:last-child{border-bottom:none}
+tbody tr:hover{background:var(--sky-pale)}
+td{padding:10px 14px;vertical-align:middle}
+
+.stu-cell{display:flex;align-items:center;gap:10px}
+.avatar{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;font-family:'Lora',serif;flex-shrink:0;color:white}
+.stu-name{font-weight:500;font-size:13px;color:var(--navy)}
+.stu-sub{font-size:11px;color:var(--text-soft)}
+
+.badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:99px;font-size:11px;font-weight:500}
+
+.season-badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:5px;font-size:11px;font-family:'DM Mono',monospace;font-weight:500;background:var(--gold-pale);color:var(--gold);border:1px solid rgba(196,153,42,0.25)}
+
+.module-dots{display:flex;gap:3px}
+.mdot{width:8px;height:8px;border-radius:2px;background:var(--border)}
+.mdot.filled{background:var(--sky)}
+.mdot.partial{background:var(--sky-pale);border:1px solid var(--sky)}
+
+/* PANEL */
+.panel-overlay{display:none;position:fixed;inset:0;background:rgba(15,31,61,0.4);z-index:200;justify-content:flex-end;backdrop-filter:blur(3px)}
+.panel-overlay.open{display:flex}
+.panel{background:var(--surface);width:640px;height:100vh;overflow-y:auto;box-shadow:var(--shadow-lg);animation:slideR 0.23s ease;display:flex;flex-direction:column}
+@keyframes slideR{from{transform:translateX(28px);opacity:0}to{transform:translateX(0);opacity:1}}
+.panel-hero{background:linear-gradient(135deg,var(--navy) 0%,var(--navy-mid) 60%,var(--navy-light) 100%);padding:26px 28px 20px;position:relative;flex-shrink:0}
+.panel-hero-close{position:absolute;top:18px;right:20px;background:rgba(255,255,255,0.1);border:none;color:white;width:30px;height:30px;border-radius:50%;font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background 0.15s}
+.panel-hero-close:hover{background:rgba(255,255,255,0.2)}
+.panel-avatar{width:52px;height:52px;border-radius:50%;font-family:'Lora',serif;font-size:21px;font-weight:700;color:white;display:flex;align-items:center;justify-content:center;margin-bottom:12px}
+.panel-name{font-family:'Lora',serif;font-size:21px;font-weight:700;color:white;margin-bottom:4px}
+.panel-school{font-size:13px;color:rgba(255,255,255,0.55)}
+.panel-meta{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.panel-meta-tag{font-family:'DM Mono',monospace;font-size:11px;background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.7);padding:3px 10px;border-radius:99px}
+
+.panel-tabs{display:flex;border-bottom:1px solid var(--border);background:var(--surface2);flex-shrink:0;overflow-x:auto}
+.ptab{padding:10px 16px;font-size:12px;cursor:pointer;color:var(--text-soft);border-bottom:2px solid transparent;margin-bottom:-1px;transition:all 0.15s;white-space:nowrap}
+.ptab:hover{color:var(--navy)}
+.ptab.active{color:var(--navy);border-bottom-color:var(--sky);font-weight:500}
+.panel-body{padding:20px 26px;flex:1;overflow-y:auto}
+.tab-content{display:none}.tab-content.active{display:block}
+
+/* MODULE CARDS */
+.mod-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.mod-card{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:14px}
+.mod-card.full{grid-column:1/-1}
+.mod-card-head{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.mod-icon{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.mod-title{font-size:12px;font-weight:600;color:var(--navy);letter-spacing:0.03em}
+.mod-edit-btn{margin-left:auto;background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:13px;padding:2px 6px;border-radius:4px;transition:all 0.14s}
+.mod-edit-btn:hover{color:var(--sky);background:var(--sky-pale)}
+.field-row{display:flex;justify-content:space-between;align-items:baseline;padding:4px 0;border-bottom:1px dashed var(--border);gap:8px}
+.field-row:last-child{border-bottom:none}
+.field-key{font-size:11.5px;color:var(--text-soft);flex-shrink:0}
+.field-val{font-size:12.5px;color:var(--text);text-align:right;font-weight:500}
+.field-val.empty{color:var(--text-muted);font-weight:400;font-style:italic}
+.entry-item{background:white;border:1px solid var(--border);border-radius:8px;padding:9px 12px;margin-bottom:7px;font-size:12.5px;line-height:1.7}
+.entry-item:last-child{margin-bottom:0}
+.entry-desc{font-size:12px;color:var(--text-mid)}
+
+/* NOTES */
+.note-item{background:var(--surface2);border-left:3px solid var(--sky);border-radius:0 8px 8px 0;padding:10px 13px;margin-bottom:8px}
+.note-date{font-family:'DM Mono',monospace;font-size:10px;color:var(--text-muted);margin-bottom:3px}
+.note-text{font-size:13px;color:var(--text-mid);line-height:1.7}
+.note-add{display:flex;gap:8px;margin-top:10px}
+.note-add textarea{flex:1;border:1px solid var(--border);border-radius:8px;padding:9px 12px;font-size:13px;font-family:'Noto Sans SC',sans-serif;resize:none;height:68px;outline:none;background:var(--bg);transition:border-color 0.15s}
+.note-add textarea:focus{border-color:var(--sky);background:white}
+
+/* FILES */
+.file-item{display:flex;align-items:center;gap:10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:9px 12px;margin-bottom:7px}
+.file-icon{font-size:18px;flex-shrink:0}
+.file-name{font-size:12.5px;color:var(--navy);font-weight:500;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.file-size{font-family:'DM Mono',monospace;font-size:10px;color:var(--text-muted);flex-shrink:0}
+.file-del{background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:15px;padding:2px 5px;border-radius:4px;flex-shrink:0;transition:all 0.14s}
+.file-del:hover{color:var(--rose);background:var(--rose-pale)}
+.file-download{background:none;border:none;cursor:pointer;color:var(--sky);font-size:13px;padding:2px 7px;border-radius:4px;text-decoration:none;flex-shrink:0;transition:all 0.14s;font-family:'Noto Sans SC',sans-serif}
+.file-download:hover{background:var(--sky-pale)}
+.upload-zone{border:2px dashed var(--border);border-radius:10px;padding:20px;text-align:center;color:var(--text-muted);font-size:13px;cursor:pointer;transition:all 0.17s;margin-top:8px}
+.upload-zone:hover{border-color:var(--sky);color:var(--sky);background:var(--sky-pale)}
+.upload-zone input{display:none}
+
+/* TODO */
+.todo-item{display:flex;align-items:flex-start;gap:10px;padding:9px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;margin-bottom:7px;transition:all 0.15s}
+.todo-item.done{opacity:0.5}
+.todo-cb{width:17px;height:17px;border-radius:4px;border:2px solid var(--border);cursor:pointer;flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;transition:all 0.15s;background:white}
+.todo-cb.checked{background:var(--sage);border-color:var(--sage);color:white;font-size:11px}
+.todo-text{flex:1;font-size:13px;color:var(--text-mid);line-height:1.6}
+.todo-text.done{text-decoration:line-through;color:var(--text-muted)}
+.todo-due{font-family:'DM Mono',monospace;font-size:10px;flex-shrink:0}
+.todo-due.overdue{color:var(--rose)}
+.todo-due.soon{color:var(--amber)}
+.todo-due.ok{color:var(--text-muted)}
+.todo-del{background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:14px;padding:2px 4px;border-radius:4px;flex-shrink:0;transition:all 0.14s}
+.todo-del:hover{color:var(--rose)}
+.todo-add-row{display:grid;grid-template-columns:1fr auto auto;gap:8px;margin-top:10px}
+.todo-add-row input{border:1px solid var(--border);border-radius:7px;padding:8px 11px;font-size:13px;font-family:'Noto Sans SC',sans-serif;background:var(--bg);outline:none;transition:border-color 0.15s}
+.todo-add-row input:focus{border-color:var(--sky);background:white}
+
+/* RESUME */
+.resume-section{margin-bottom:18px}
+.resume-label{font-family:'DM Mono',monospace;font-size:9.5px;letter-spacing:0.13em;text-transform:uppercase;color:var(--text-muted);margin-bottom:7px;padding-bottom:5px;border-bottom:1px solid var(--border)}
+.resume-textarea{width:100%;border:1px solid var(--border);border-radius:8px;padding:11px 14px;font-size:13px;font-family:'Noto Sans SC',sans-serif;line-height:1.9;color:var(--text);background:var(--bg);resize:vertical;min-height:120px;outline:none;transition:border-color 0.15s}
+.resume-textarea:focus{border-color:var(--sky);background:white}
+.ai-style-row{display:flex;gap:7px;flex-wrap:wrap;margin:8px 0}
+.style-chip{padding:5px 12px;border:1px solid var(--border);border-radius:99px;font-size:12px;cursor:pointer;color:var(--text-soft);background:var(--bg);transition:all 0.15s}
+.style-chip:hover{border-color:var(--sky);color:var(--sky)}
+.style-chip.sel{background:var(--navy-mid);border-color:var(--navy-mid);color:white}
+.lang-tabs{display:flex;gap:5px;margin-bottom:12px}
+.lang-tab{padding:5px 14px;border:1px solid var(--border);border-radius:6px;font-size:12px;cursor:pointer;color:var(--text-soft);background:var(--bg);transition:all 0.14s}
+.lang-tab:hover{color:var(--navy)}
+.lang-tab.active{background:var(--sky);color:white;border-color:var(--sky)}
+
+.result-wrap{border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-top:14px}
+.result-head{background:var(--navy);padding:9px 14px;display:flex;align-items:center;gap:8px;font-family:'DM Mono',monospace;font-size:11px;color:rgba(255,255,255,0.6)}
+.ai-pulse{width:7px;height:7px;border-radius:50%;background:var(--sky);animation:pulse 1.6s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.35}}
+.result-body{padding:14px;font-size:13px;line-height:1.95;color:var(--text);white-space:pre-wrap;background:white;min-height:80px}
+.result-foot{padding:9px 14px;background:var(--surface2);border-top:1px solid var(--border);display:flex;gap:8px}
+.loading-dots span{display:inline-block;width:6px;height:6px;background:var(--sky);border-radius:50%;margin:0 2px;animation:bdot 1.2s infinite}
+.loading-dots span:nth-child(2){animation-delay:0.2s}
+.loading-dots span:nth-child(3){animation-delay:0.4s}
+@keyframes bdot{0%,80%,100%{transform:scale(0.7);opacity:0.4}40%{transform:scale(1.2);opacity:1}}
+
+/* MODALS */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(15,31,61,0.45);z-index:300;align-items:flex-start;justify-content:center;padding-top:36px;backdrop-filter:blur(3px)}
+.modal-overlay.open{display:flex}
+.modal{background:var(--surface);border-radius:14px;width:620px;max-height:88vh;overflow-y:auto;box-shadow:var(--shadow-lg);animation:modIn 0.22s ease}
+.modal.sm{width:480px}
+@keyframes modIn{from{transform:translateY(-14px);opacity:0}to{transform:translateY(0);opacity:1}}
+.modal-head{padding:20px 24px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;background:var(--surface2);border-radius:14px 14px 0 0}
+.modal-title{font-family:'Lora',serif;font-size:16px;font-weight:600;color:var(--navy)}
+.modal-close{margin-left:auto;background:none;border:none;font-size:20px;cursor:pointer;color:var(--text-soft);padding:2px 8px;border-radius:6px;transition:all 0.14s}
+.modal-close:hover{background:var(--bg);color:var(--text)}
+.modal-body{padding:20px 24px}
+.modal-foot{padding:12px 24px 20px;display:flex;justify-content:flex-end;gap:10px}
+.sec-head{font-family:'DM Mono',monospace;font-size:9.5px;letter-spacing:0.15em;text-transform:uppercase;color:var(--sky);margin:16px 0 9px;padding-bottom:5px;border-bottom:1px solid var(--sky-pale)}
+.sec-head:first-child{margin-top:0}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.fg{display:flex;flex-direction:column;gap:5px}
+.fg.full{grid-column:1/-1}
+.fl{font-size:11.5px;font-weight:500;color:var(--text-mid)}
+.fi,.fs,.fta{border:1px solid var(--border);border-radius:7px;padding:8px 11px;font-size:13px;font-family:'Noto Sans SC',sans-serif;color:var(--text);background:var(--bg);outline:none;transition:border-color 0.15s}
+.fi:focus,.fs:focus,.fta:focus{border-color:var(--sky);background:white}
+.fta{resize:vertical;min-height:72px}
+.emod-group{margin-bottom:13px}
+.emod-label{font-size:11.5px;font-weight:500;color:var(--text-mid);margin-bottom:5px}
+.emod-textarea{width:100%;border:1px solid var(--border);border-radius:7px;padding:9px 12px;font-size:13px;font-family:'Noto Sans SC',sans-serif;line-height:1.8;color:var(--text);background:var(--bg);resize:vertical;outline:none;min-height:80px;transition:border-color 0.15s}
+.emod-textarea:focus{border-color:var(--sky);background:white}
+.emod-input{width:100%;border:1px solid var(--border);border-radius:7px;padding:8px 11px;font-size:13px;font-family:'Noto Sans SC',sans-serif;color:var(--text);background:var(--bg);outline:none;transition:border-color 0.15s}
+.emod-input:focus{border-color:var(--sky);background:white}
+.emod-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+/* TODO GLOBAL VIEW */
+.todo-board{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.todo-col{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow-sm)}
+.todo-col-head{padding:13px 16px;background:var(--surface2);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px}
+.todo-col-title{font-family:'Lora',serif;font-size:13px;font-weight:600;color:var(--navy)}
+.todo-col-count{font-family:'DM Mono',monospace;font-size:10px;background:var(--sky-pale);color:var(--steel);padding:1px 7px;border-radius:99px}
+.todo-col-body{padding:12px}
+
+.toast{position:fixed;bottom:28px;right:28px;background:var(--navy);color:white;padding:11px 18px;border-radius:9px;font-size:13px;z-index:999;transform:translateY(70px);opacity:0;transition:all 0.25s cubic-bezier(0.34,1.56,0.64,1);pointer-events:none;box-shadow:var(--shadow-md)}
+.toast.show{transform:translateY(0);opacity:1}
+.empty-state{text-align:center;padding:48px 20px;color:var(--text-muted)}
+.empty-icon{font-size:34px;margin-bottom:10px}
+.empty-text{font-size:13px}
+.divider{height:1px;background:var(--border);margin:14px 0}
+
+/* SEASON COLORS */
+.s-27fall{background:var(--sage-pale);color:var(--sage);border:1px solid rgba(58,122,90,0.2)}
+.s-28fall{background:var(--sky-pale);color:var(--steel);border:1px solid rgba(91,141,217,0.2)}
+.s-29fall{background:#ede8fa;color:#6a5acd;border:1px solid rgba(106,90,205,0.2)}
+.s-30fall{background:#fdefd9;color:#d4772a;border:1px solid rgba(212,119,42,0.2)}
+.s-other{background:#f0f0f0;color:#888;border:1px solid #ddd}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<nav class="sidebar">
+  <div class="logo-wrap">
+    <div class="logo-en">Study Abroad CRM</div>
+    <div class="logo-cn">留学规划档案</div>
+    <div class="logo-tag">PLANNER EDITION · v2.0</div>
+  </div>
+  <div class="nav">
+    <div class="nav-group">工作台</div>
+    <div class="nav-item active" onclick="gotoView('dashboard',this)"><span class="nav-ico">◈</span> 总览</div>
+    <div class="nav-group">学生</div>
+    <div class="nav-item" onclick="gotoView('students',this)"><span class="nav-ico">◉</span> 学生列表 <span class="nav-pill" id="nav-count">0</span></div>
+    <div class="nav-group">工具</div>
+    <div class="nav-item" onclick="gotoView('todos',this)"><span class="nav-ico">☑</span> 待办提醒 <span class="nav-pill" id="nav-todo-count" style="background:rgba(196,69,58,0.25);color:#e87070">0</span></div>
+    <div class="nav-item" onclick="gotoView('resume-tool',this)"><span class="nav-ico">✦</span> 简历生成 AI</div>
+    <div class="nav-item" onclick="exportExcel()"><span class="nav-ico">↓</span> 导出 Excel</div>
+  </div>
+  <div class="sidebar-bottom">数据存于本地浏览器<br>六大背景模块 · v2.0</div>
+</nav>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-title" id="topbar-title">总览</div>
+    <div class="topbar-count" id="topbar-count">0 位学生</div>
+    <div class="search-wrap">
+      <span style="color:var(--text-muted)">⌕</span>
+      <input type="text" id="search-input" placeholder="搜索姓名、学校…" oninput="onSearch()">
+    </div>
+    <button class="btn btn-ghost btn-sm" onclick="exportExcel()" style="gap:4px">↓ 导出</button>
+    <button class="btn btn-primary" onclick="openAddModal()">＋ 新增学生</button>
+  </div>
+
+  <div class="content">
+
+    <!-- DASHBOARD -->
+    <div class="view active" id="view-dashboard">
+      <div class="stats-row">
+        <div class="stat-card"><div class="stat-label">学生总数</div><div class="stat-val" id="st-total">0</div><div class="stat-sub">在管档案</div></div>
+        <div class="stat-card"><div class="stat-label">27Fall</div><div class="stat-val" id="st-prep" style="color:var(--sage)">0</div><div class="stat-sub">申请季学生</div></div>
+        <div class="stat-card"><div class="stat-label">28Fall</div><div class="stat-val" id="st-active" style="color:var(--sky)">0</div><div class="stat-sub">申请季学生</div></div>
+        <div class="stat-card"><div class="stat-label">待办未完成</div><div class="stat-val" id="st-todo" style="color:var(--rose)">0</div><div class="stat-sub">需要跟进</div></div>
+      </div>
+      <div class="list-card">
+        <div class="list-head"><div class="list-head-title">最近更新</div></div>
+        <div id="dash-table"></div>
+      </div>
+    </div>
+
+    <!-- STUDENTS -->
+    <div class="view" id="view-students">
+      <div class="list-card">
+        <div class="list-head">
+          <div class="list-head-title">学生档案</div>
+
+          <div class="filter-tabs" id="season-filter-tabs">
+            <div class="ftab season active" onclick="setFilter('season','all',this)">所有申请季</div>
+            <div class="ftab season" onclick="setFilter('season','27Fall',this)">27Fall</div>
+            <div class="ftab season" onclick="setFilter('season','28Fall',this)">28Fall</div>
+            <div class="ftab season" onclick="setFilter('season','29Fall',this)">29Fall</div>
+            <div class="ftab season" onclick="setFilter('season','30Fall',this)">30Fall</div>
+          </div>
+        </div>
+        <div id="stu-table"></div>
+      </div>
+    </div>
+
+    <!-- TODOS GLOBAL -->
+    <div class="view" id="view-todos">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+        <div>
+          <div style="font-family:'Lora',serif;font-size:17px;font-weight:600;color:var(--navy)">待办提醒</div>
+          <div style="font-size:12px;color:var(--text-soft);margin-top:2px">所有学生的待办事项汇总</div>
+        </div>
+      </div>
+      <div class="todo-board" id="global-todo-board"></div>
+    </div>
+
+    <!-- RESUME TOOL -->
+    <div class="view" id="view-resume-tool">
+      <div style="max-width:800px">
+        <div class="list-card" style="padding:26px 30px">
+          <div style="font-family:'Lora',serif;font-size:17px;font-weight:600;color:var(--navy);margin-bottom:5px">✦ 简历生成 AI</div>
+          <div style="font-size:13px;color:var(--text-soft);margin-bottom:20px">基于六大背景模块，生成专业中英文简历</div>
+          <div class="resume-section">
+            <div class="resume-label">选择学生（自动导入背景）</div>
+            <select class="fi" id="rt-stu-sel" onchange="loadRTStudent()" style="width:280px">
+              <option value="">— 选择学生 —</option>
+            </select>
+          </div>
+          <div id="rt-preview-box" style="display:none">
+            <div class="resume-label" style="margin-top:14px">学生背景摘要（可修改）</div>
+            <textarea class="resume-textarea" id="rt-context" style="min-height:150px"></textarea>
+          </div>
+          <div class="resume-section" style="margin-top:14px">
+            <div class="resume-label">语言</div>
+            <div class="lang-tabs">
+              <div class="lang-tab active" onclick="setRTLang(this,'英文')">英文简历</div>
+              <div class="lang-tab" onclick="setRTLang(this,'中文')">中文简历</div>
+            </div>
+          </div>
+          <div class="resume-section">
+            <div class="resume-label">风格</div>
+            <div class="ai-style-row" id="rt-style-row">
+              <div class="style-chip sel" onclick="pickRTStyle(this,'学术型（科研/PhD申请）')">学术型</div>
+              <div class="style-chip" onclick="pickRTStyle(this,'专业型（Master申请）')">专业型</div>
+              <div class="style-chip" onclick="pickRTStyle(this,'国际化精炼')">国际化精炼</div>
+              <div class="style-chip" onclick="pickRTStyle(this,'突出实习成就')">突出实习</div>
+            </div>
+          </div>
+          <div class="resume-section">
+            <div class="resume-label">补充要求（可选）</div>
+            <textarea class="resume-textarea" id="rt-extra" style="min-height:60px" placeholder="例：目标 UCL，申请 Data Science，重点突出科研…"></textarea>
+          </div>
+          <div style="display:flex;gap:10px">
+            <button class="btn btn-primary" onclick="genRT()" id="rt-gen-btn">✦ 生成简历</button>
+            <button class="btn btn-ghost" onclick="clearRT()">清空</button>
+          </div>
+          <div id="rt-result-wrap" style="display:none">
+            <div class="result-wrap">
+              <div class="result-head"><div class="ai-pulse"></div><span id="rt-status">AI 生成结果</span></div>
+              <div class="result-body" id="rt-result-body"></div>
+              <div class="result-foot">
+                <button class="btn btn-ghost btn-sm" onclick="copyRT()">复制</button>
+                <button class="btn btn-ghost btn-sm" onclick="genRT()">重新生成</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ADD STUDENT MODAL -->
+<div class="modal-overlay" id="add-modal">
+  <div class="modal">
+    <div class="modal-head"><div class="modal-title">新增学生档案</div><button class="modal-close" onclick="closeAddModal()">×</button></div>
+    <div class="modal-body">
+      <!-- BATCH IMPORT BAR -->
+      <div style="background:var(--sky-pale);border:1px solid rgba(91,141,217,0.25);border-radius:9px;padding:11px 14px;margin-bottom:16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <span style="font-size:13px;color:var(--steel);flex:1">📥 批量导入：下载模板 → 填写 → 上传</span>
+        <button class="btn btn-ghost btn-sm" onclick="downloadTemplate()" style="color:var(--steel);border-color:rgba(91,141,217,0.3)">⬇ 下载 Excel 模板</button>
+        <label class="btn btn-sky btn-sm" style="cursor:pointer">
+          ⬆ 上传 CSV
+          <input type="file" id="batch-import-input" accept=".csv" style="display:none" onchange="batchImport(event)">
+        </label>
+      </div>
+      <div style="text-align:center;color:var(--text-muted);font-size:12px;margin-bottom:14px;letter-spacing:0.08em">— 或手动填写单个学生 —</div>
+      <div class="sec-head">基本信息</div>
+      <div class="form-grid">
+        <div class="fg"><label class="fl">姓名 *</label><input class="fi" id="f-name" placeholder="学生姓名"></div>
+        <div class="fg"><label class="fl">性别</label><select class="fs" id="f-gender"><option value="">不填</option><option value="男">男</option><option value="女">女</option></select></div>
+        <div class="fg"><label class="fl">联系方式（微信/手机）</label><input class="fi" id="f-contact" placeholder="微信号或手机"></div>
+
+        <div class="fg"><label class="fl">申请季</label>
+          <select class="fs" id="f-season">
+            <option value="">未定</option><option value="27Fall">27Fall</option><option value="28Fall">28Fall</option><option value="29Fall">29Fall</option><option value="30Fall">30Fall</option>
+          </select>
+        </div>
+        <div class="fg"><label class="fl">目标方向</label><input class="fi" id="f-target" placeholder="例：CS / 金融 / 教育学"></div>
+      </div>
+      <div class="sec-head">📚 教育背景</div>
+      <div class="form-grid">
+        <div class="fg"><label class="fl">本科学校</label><input class="fi" id="f-school" placeholder="例：中山大学"></div>
+        <div class="fg"><label class="fl">专业</label><input class="fi" id="f-major" placeholder="例：计算机科学"></div>
+        <div class="fg"><label class="fl">年级/预计毕业</label><input class="fi" id="f-grade" placeholder="例：大三 / 2026届"></div>
+        <div class="fg"><label class="fl">GPA</label><input class="fi" id="f-gpa" placeholder="例：3.7/4.0"></div>
+        <div class="fg full"><label class="fl">排名/荣誉</label><input class="fi" id="f-rank" placeholder="例：专业前10%，校级奖学金"></div>
+      </div>
+      <div class="sec-head">🌐 语言成绩</div>
+      <div class="form-grid">
+        <div class="fg"><label class="fl">雅思</label><input class="fi" id="f-ielts" placeholder="例：7.0 (R7.5 L7.5 W6.5 S6.5)"></div>
+        <div class="fg"><label class="fl">托福</label><input class="fi" id="f-toefl" placeholder="例：105"></div>
+        <div class="fg"><label class="fl">四六级</label><input class="fi" id="f-cet" placeholder="例：六级580"></div>
+        <div class="fg"><label class="fl">GRE / GMAT</label><input class="fi" id="f-gre" placeholder="例：GRE 328+4.0"></div>
+      </div>
+      <div class="sec-head">🏆 竞赛 / 💼 实习 / 🔬 科研 / ✈️ 交流</div>
+      <div class="fg full" style="margin-bottom:10px"><label class="fl">竞赛（每行一条）</label><textarea class="fta" id="f-competition" placeholder="例：美赛 MCM 一等奖 2024"></textarea></div>
+      <div class="fg full" style="margin-bottom:10px"><label class="fl">实习（每行一条）</label><textarea class="fta" id="f-internship" placeholder="例：腾讯 产品运营实习生 2024暑假"></textarea></div>
+      <div class="fg full" style="margin-bottom:10px"><label class="fl">科研（每行一条）</label><textarea class="fta" id="f-research" placeholder="例：NLP科研助理 张XX教授 2023-2024 一篇在投"></textarea></div>
+      <div class="fg full"><label class="fl">交流交换</label><textarea class="fta" id="f-exchange" placeholder="例：多伦多大学交换 2023秋季 GPA3.8/4.0"></textarea></div>
+      <div class="sec-head">📝 初始备注</div>
+      <div class="fg full"><label class="fl">首次沟通记录</label><textarea class="fta" id="f-note" placeholder="初次沟通情况，学生诉求…"></textarea></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeAddModal()">取消</button>
+      <button class="btn btn-primary" onclick="saveNewStudent()">保存档案</button>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT MODULE MODAL -->
+<div class="modal-overlay" id="edit-modal">
+  <div class="modal sm">
+    <div class="modal-head"><div class="modal-title" id="edit-modal-title">编辑</div><button class="modal-close" onclick="closeEditModal()">×</button></div>
+    <div class="modal-body" id="edit-modal-body"></div>
+    <div class="modal-foot"><button class="btn btn-ghost" onclick="closeEditModal()">取消</button><button class="btn btn-primary" onclick="saveModuleEdit()">保存</button></div>
+  </div>
+</div>
+
+<!-- STUDENT DETAIL PANEL -->
+<div class="panel-overlay" id="panel-overlay" onclick="handlePanelClick(event)">
+  <div class="panel" id="detail-panel">
+    <div class="panel-hero">
+      <button class="panel-hero-close" onclick="closePanel()">×</button>
+      <div class="panel-avatar" id="p-avatar"></div>
+      <div class="panel-name" id="p-name"></div>
+      <div class="panel-school" id="p-school"></div>
+      <div class="panel-meta" id="p-meta"></div>
+    </div>
+    <div class="panel-tabs">
+      <div class="ptab active" onclick="switchPTab('overview',this)">背景总览</div>
+      <div class="ptab" onclick="switchPTab('activities',this)">活动经历</div>
+      <div class="ptab" onclick="switchPTab('files',this)">附件文件</div>
+      <div class="ptab" onclick="switchPTab('todos',this)">待办 <span id="p-todo-badge" style="font-family:'DM Mono',monospace;font-size:10px;background:var(--rose-pale);color:var(--rose);padding:1px 5px;border-radius:99px;margin-left:2px;display:none"></span></div>
+      <div class="ptab" onclick="switchPTab('notes',this)">沟通记录</div>
+      <div class="ptab" onclick="switchPTab('resume',this)">简历润色</div>
+    </div>
+    <div class="panel-body">
+
+      <div class="tab-content active" id="tab-overview">
+        <div class="mod-grid">
+          <div class="mod-card full">
+            <div class="mod-card-head"><div class="mod-icon" style="background:#dce8f8">📚</div><div class="mod-title">教育背景</div><button class="mod-edit-btn" onclick="editModule('education')">编辑</button></div>
+            <div id="m-education"></div>
+          </div>
+
+          <div class="mod-card">
+            <div class="mod-card-head"><div class="mod-icon" style="background:#e8eef8">🌐</div><div class="mod-title">语言成绩</div><button class="mod-edit-btn" onclick="editModule('language')">编辑</button></div>
+            <div id="m-language"></div>
+          </div>
+          <div class="mod-card">
+            <div class="mod-card-head"><div class="mod-icon" style="background:#fdf3dc">📞</div><div class="mod-title">联系 & 申请季</div><button class="mod-edit-btn" onclick="editModule('basic')">编辑</button></div>
+            <div id="m-contact"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-content" id="tab-activities">
+        <div class="mod-card" style="margin-bottom:12px">
+          <div class="mod-card-head"><div class="mod-icon" style="background:#fdefd9">🏆</div><div class="mod-title">竞赛经历</div><button class="mod-edit-btn" onclick="editModule('competition')">编辑</button></div>
+          <div id="m-competition"></div>
+        </div>
+        <div class="mod-card" style="margin-bottom:12px">
+          <div class="mod-card-head"><div class="mod-icon" style="background:#fde8e7">💼</div><div class="mod-title">实习经历</div><button class="mod-edit-btn" onclick="editModule('internship')">编辑</button></div>
+          <div id="m-internship"></div>
+        </div>
+        <div class="mod-card" style="margin-bottom:12px">
+          <div class="mod-card-head"><div class="mod-icon" style="background:#e8f5ee">🔬</div><div class="mod-title">科研经历</div><button class="mod-edit-btn" onclick="editModule('research')">编辑</button></div>
+          <div id="m-research"></div>
+        </div>
+        <div class="mod-card">
+          <div class="mod-card-head"><div class="mod-icon" style="background:#ede8fa">✈️</div><div class="mod-title">交流交换</div><button class="mod-edit-btn" onclick="editModule('exchange')">编辑</button></div>
+          <div id="m-exchange"></div>
+        </div>
+      </div>
+
+      <!-- FILES TAB -->
+      <div class="tab-content" id="tab-files">
+        <div style="margin-bottom:12px;font-size:13px;color:var(--text-soft)">上传学生的简历、成绩单、语言成绩等文件（存于本地浏览器）</div>
+        <div id="files-list"></div>
+        <div class="upload-zone" onclick="document.getElementById('file-upload-input').click()">
+          <input type="file" id="file-upload-input" multiple onchange="handleFileUpload(event)" accept=".pdf,.doc,.docx,.png,.jpg,.jpeg,.txt">
+          <div style="font-size:22px;margin-bottom:6px">📎</div>
+          <div>点击上传文件</div>
+          <div style="font-size:11px;margin-top:4px;color:var(--text-muted)">支持 PDF、Word、图片等格式</div>
+        </div>
+      </div>
+
+      <!-- TODOS TAB -->
+      <div class="tab-content" id="tab-todos">
+        <div id="p-todos-list"></div>
+        <div class="todo-add-row" style="margin-top:10px">
+          <input type="text" id="todo-input" placeholder="添加待办事项…" onkeydown="if(event.key==='Enter')addTodo()">
+          <input type="date" id="todo-due" style="border:1px solid var(--border);border-radius:7px;padding:8px 11px;font-size:12px;background:var(--bg);outline:none;color:var(--text)">
+          <button class="btn btn-primary btn-sm" onclick="addTodo()">添加</button>
+        </div>
+      </div>
+
+      <!-- NOTES TAB -->
+      <div class="tab-content" id="tab-notes">
+        <div id="notes-list"></div>
+        <div class="note-add">
+          <textarea id="note-input" placeholder="记录本次沟通…"></textarea>
+          <button class="btn btn-primary btn-sm" style="align-self:flex-end" onclick="addNote()">添加</button>
+        </div>
+      </div>
+
+      <!-- RESUME TAB -->
+      <div class="tab-content" id="tab-resume">
+        <div style="margin-bottom:12px">
+          <div class="resume-label">语言</div>
+          <div class="lang-tabs" id="p-lang-tabs">
+            <div class="lang-tab active" onclick="setPLang(this,'英文')">英文简历</div>
+            <div class="lang-tab" onclick="setPLang(this,'中文')">中文简历</div>
+          </div>
+        </div>
+        <div style="margin-bottom:12px">
+          <div class="resume-label">学生背景（可修改）</div>
+          <textarea class="resume-textarea" id="p-resume-context" style="min-height:140px"></textarea>
+        </div>
+        <div style="margin-bottom:12px">
+          <div class="resume-label">风格</div>
+          <div class="ai-style-row" id="p-style-row">
+            <div class="style-chip sel" onclick="pickPStyle(this,'学术型（科研/PhD申请）')">学术型</div>
+            <div class="style-chip" onclick="pickPStyle(this,'专业型（Master申请）')">专业型</div>
+            <div class="style-chip" onclick="pickPStyle(this,'国际化精炼')">国际化精炼</div>
+            <div class="style-chip" onclick="pickPStyle(this,'突出实习成就')">突出实习</div>
+          </div>
+        </div>
+        <div style="margin-bottom:12px">
+          <div class="resume-label">补充要求</div>
+          <textarea class="resume-textarea" id="p-resume-extra" style="min-height:56px" placeholder="目标学校、申请方向、特殊要求…"></textarea>
+        </div>
+        <div style="display:flex;gap:8px;margin-bottom:12px">
+          <button class="btn btn-primary btn-sm" onclick="genStudentResume()" id="p-gen-btn">✦ 生成简历</button>
+          <button class="btn btn-ghost btn-sm" onclick="clearStudentResume()">清空</button>
+        </div>
+        <div id="p-resume-result" style="display:none">
+          <div class="result-wrap">
+            <div class="result-head"><div class="ai-pulse"></div><span id="p-resume-status">AI 生成结果</span></div>
+            <div class="result-body" id="p-resume-body"></div>
+            <div class="result-foot">
+              <button class="btn btn-ghost btn-sm" onclick="copyPResume()">复制</button>
+              <button class="btn btn-ghost btn-sm" onclick="genStudentResume()">重新生成</button>
+            </div>
+          </div>
+        </div>
+        <div style="margin-top:18px;padding-top:14px;border-top:1px solid var(--border)">
+          <button class="btn btn-danger btn-sm" onclick="deleteStudent()">删除该学生档案</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ══ DATA ══
+const SK = 'sacrm_v3';
+let students = [];
+let currentId = null;
+let currentFilter = { season: 'all' };
+let currentPTab = 'overview';
+let editingModule = null;
+let pResumeStyle = '学术型（科研/PhD申请）';
+let pResumeLang = '英文';
+let rtStyle = '学术型（科研/PhD申请）';
+let rtLang = '英文';
+
+const COLORS = ['#1a5276','#1a7a5a','#7d3c98','#c0392b','#d4582a','#1565a8'];
+function avatarColor(name){ let h=0; for(const c of name) h=(h*31+c.charCodeAt(0))%COLORS.length; return COLORS[h]; }
+function load(){ try{ students=JSON.parse(localStorage.getItem(SK))||[]; }catch{ students=[]; } }
+function save(){ localStorage.setItem(SK,JSON.stringify(students)); }
+function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,6); }
+
+// ══ NAV ══
+function gotoView(v,el){
+  document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));
+  document.getElementById('view-'+v).classList.add('active');
+  el.classList.add('active');
+  const titles={dashboard:'总览',students:'学生档案','todos':'待办提醒','resume-tool':'简历生成 AI'};
+  document.getElementById('topbar-title').textContent=titles[v]||v;
+  if(v==='dashboard') renderDash();
+  if(v==='students') renderTable();
+  if(v==='todos') renderGlobalTodos();
+  if(v==='resume-tool') populateRTSelect();
+}
+
+// ══ SEASON ══
+const SEASON_CLASSES = { '27Fall':'s-27fall','28Fall':'s-28fall','29Fall':'s-29fall','30Fall':'s-30fall' };
+function seasonBadge(season){
+  if(!season) return '';
+  const cls = SEASON_CLASSES[season] || 's-other';
+  return `<span class="season-badge ${cls}">${season}</span>`;
+}
+
+// ══ STATUS BADGE ══
+
+// ══ RENDER TABLE ══
+function moduleCompleteness(s){
+  return ['education','language','competition','internship','research','exchange'].map(m=>{
+    const v=s[m]; if(!v) return 'empty';
+    return Object.values(v).some(x=>x&&x.trim()) ? 'filled' : 'empty';
+  });
+}
+
+function renderTableData(data,container){
+  if(!data.length){ container.innerHTML=`<div class="empty-state"><div class="empty-icon">○</div><div class="empty-text">暂无学生档案</div></div>`; return; }
+  container.innerHTML=`<table><thead><tr>
+    <th>学生</th><th>学校/专业</th><th>GPA</th><th>语言</th><th>申请季</th><th>状态</th><th>六大模块</th><th>更新时间</th>
+  </tr></thead><tbody>
+  ${data.map(s=>{
+    const dots=moduleCompleteness(s);
+    const dotHtml=dots.map((d,i)=>`<div class="mdot ${d}" title="${['教育','语言','竞赛','实习','科研','交流'][i]}"></div>`).join('');
+    const lang=[s.language?.ielts&&`雅${s.language.ielts.split(' ')[0]}`,s.language?.toefl&&`托${s.language.toefl.split(' ')[0]}`].filter(Boolean).join(' ') || '—';
+    return `<tr onclick="openPanel('${s.id}')">
+      <td><div class="stu-cell">
+        <div class="avatar" style="background:${avatarColor(s.name)}">${s.name.slice(0,1)}</div>
+        <div><div class="stu-name">${s.name}</div><div class="stu-sub">${s.contact||'—'}</div></div>
+      </div></td>
+      <td><div class="stu-name" style="font-size:12px">${s.education?.school||'—'}</div><div class="stu-sub">${s.education?.major||'—'}</div></td>
+      <td style="font-family:'DM Mono',monospace;font-size:12px;color:var(--navy-mid)">${s.education?.gpa||'—'}</td>
+      <td style="font-size:12px;color:var(--text-mid)">${lang}</td>
+      <td>${s.season?seasonBadge(s.season):'<span style="color:var(--text-muted);font-size:11px">未定</span>'}</td>
+      <td><div class="module-dots">${dotHtml}</div></td>
+      <td style="font-family:'DM Mono',monospace;font-size:10.5px;color:var(--text-muted)">${new Date(s.updatedAt||s.createdAt).toLocaleDateString('zh-CN')}</td>
+    </tr>`;
+  }).join('')}
+  </tbody></table>`;
+}
+
+function renderTable(){
+  let data = [...students];
+  if(currentFilter.season!=='all') data=data.filter(s=>s.season===currentFilter.season);
+  const q=document.getElementById('search-input').value.trim().toLowerCase();
+  if(q) data=data.filter(s=>s.name.toLowerCase().includes(q)||(s.education?.school||'').toLowerCase().includes(q)||(s.education?.major||'').toLowerCase().includes(q));
+  data.sort((a,b)=>(b.updatedAt||b.createdAt)-(a.updatedAt||a.createdAt));
+  renderTableData(data,document.getElementById('stu-table'));
+  updateCounts();
+}
+
+function renderDash(){
+  document.getElementById('st-total').textContent=students.length;
+  document.getElementById('st-prep').textContent=students.filter(s=>s.season==='27Fall').length;
+  document.getElementById('st-active').textContent=students.filter(s=>s.season==='28Fall').length;
+  const pendingTodos=students.reduce((sum,s)=>sum+(s.todos||[]).filter(t=>!t.done).length,0);
+  document.getElementById('st-todo').textContent=pendingTodos;
+  const recent=[...students].sort((a,b)=>(b.updatedAt||b.createdAt)-(a.updatedAt||a.createdAt)).slice(0,8);
+  renderTableData(recent,document.getElementById('dash-table'));
+  updateCounts();
+}
+
+function updateCounts(){
+  document.getElementById('nav-count').textContent=students.length;
+  document.getElementById('topbar-count').textContent=students.length+' 位学生';
+  const pending=students.reduce((sum,s)=>sum+(s.todos||[]).filter(t=>!t.done).length,0);
+  const badge=document.getElementById('nav-todo-count');
+  badge.textContent=pending;
+  badge.style.display=pending?'inline':'none';
+}
+
+function setFilter(type,val,el){
+  currentFilter[type]=val;
+  const tabGroup='#season-filter-tabs .ftab';
+  document.querySelectorAll(tabGroup).forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  renderTable();
+}
+
+function onSearch(){ renderTable(); }
+
+// ══ ADD STUDENT ══
+function openAddModal(){
+  ['name','contact','school','major','grade','gpa','rank','ielts','toefl','cet','gre','competition','internship','research','exchange','note','target'].forEach(id=>{
+    const el=document.getElementById('f-'+id); if(el) el.value='';
+  });
+  document.getElementById('f-gender').value='';
+  document.getElementById('f-season').value='';
+  document.getElementById('add-modal').classList.add('open');
+}
+function closeAddModal(){ document.getElementById('add-modal').classList.remove('open'); }
+
+function saveNewStudent(){
+  const name=document.getElementById('f-name').value.trim();
+  if(!name){ showToast('请填写学生姓名'); return; }
+  const note=document.getElementById('f-note').value.trim();
+  const s={
+    id:uid(), name,
+    gender:document.getElementById('f-gender').value,
+    contact:document.getElementById('f-contact').value.trim(),
+    status:'',
+    season:document.getElementById('f-season').value,
+    target:document.getElementById('f-target').value.trim(),
+    education:{ school:document.getElementById('f-school').value.trim(), major:document.getElementById('f-major').value.trim(), grade:document.getElementById('f-grade').value.trim(), gpa:document.getElementById('f-gpa').value.trim(), rank:document.getElementById('f-rank').value.trim() },
+    language:{ ielts:document.getElementById('f-ielts').value.trim(), toefl:document.getElementById('f-toefl').value.trim(), cet:document.getElementById('f-cet').value.trim(), gre:document.getElementById('f-gre').value.trim() },
+    competition:{ text:document.getElementById('f-competition').value.trim() },
+    internship:{ text:document.getElementById('f-internship').value.trim() },
+    research:{ text:document.getElementById('f-research').value.trim() },
+    exchange:{ text:document.getElementById('f-exchange').value.trim() },
+    notes: note?[{text:note,date:new Date().toISOString()}]:[],
+    todos:[], files:[],
+    createdAt:Date.now(), updatedAt:Date.now(),
+  };
+  students.unshift(s); save(); closeAddModal(); renderDash(); renderTable(); showToast('✓ 学生档案已创建');
+}
+
+// ══ PANEL ══
+function openPanel(id){
+  currentId=id;
+  const s=students.find(x=>x.id===id); if(!s) return;
+  renderPanelHero(s);
+  // reset to overview tab
+  document.querySelectorAll('.ptab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  document.querySelector('.ptab').classList.add('active');
+  document.getElementById('tab-overview').classList.add('active');
+  currentPTab='overview';
+  renderOverview(s);
+  document.getElementById('panel-overlay').classList.add('open');
+}
+function closePanel(){ document.getElementById('panel-overlay').classList.remove('open'); }
+function handlePanelClick(e){ if(e.target===document.getElementById('panel-overlay')) closePanel(); }
+
+function renderPanelHero(s){
+  const color=avatarColor(s.name);
+  document.getElementById('p-avatar').style.background=color;
+  document.getElementById('p-avatar').textContent=s.name.slice(0,1);
+  document.getElementById('p-name').textContent=s.name;
+  document.getElementById('p-school').textContent=[s.education?.school,s.education?.major,s.education?.grade].filter(Boolean).join(' · ')||'暂无教育信息';
+  const meta=[
+    s.season&&`<span class="panel-meta-tag">${s.season}</span>`,
+    s.education?.gpa&&`<span class="panel-meta-tag">GPA ${s.education.gpa}</span>`,
+    s.language?.ielts&&`<span class="panel-meta-tag">雅思 ${s.language.ielts.split(' ')[0]}</span>`,
+    s.language?.toefl&&`<span class="panel-meta-tag">托福 ${s.language.toefl}</span>`,
+  ].filter(Boolean).join('');
+  document.getElementById('p-meta').innerHTML=meta;
+  // todo badge
+  const pending=(s.todos||[]).filter(t=>!t.done).length;
+  const tb=document.getElementById('p-todo-badge');
+  tb.textContent=pending; tb.style.display=pending?'inline':'none';
+}
+
+function switchPTab(tab,el){
+  currentPTab=tab;
+  document.querySelectorAll('.ptab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('tab-'+tab).classList.add('active');
+  const s=students.find(x=>x.id===currentId); if(!s) return;
+  if(tab==='overview') renderOverview(s);
+  if(tab==='activities') renderActivities(s);
+  if(tab==='files') renderFiles(s);
+  if(tab==='todos') renderTodos(s);
+  if(tab==='notes') renderNotes(s);
+  if(tab==='resume') setupResumeTab(s);
+}
+
+function fv(val){ return val&&val.trim()?`<span class="field-val">${val}</span>`:`<span class="field-val empty">未填写</span>`; }
+function tvToEntries(text){
+  if(!text||!text.trim()) return `<div style="font-size:12px;color:var(--text-muted);font-style:italic;padding:4px 0">暂未填写</div>`;
+  return text.split('\n').filter(l=>l.trim()).map(l=>`<div class="entry-item"><div class="entry-desc">${l.trim()}</div></div>`).join('');
+}
+
+function renderOverview(s){
+  const edu=s.education||{};
+  document.getElementById('m-education').innerHTML=`
+    <div class="field-row"><span class="field-key">学校</span>${fv(edu.school)}</div>
+    <div class="field-row"><span class="field-key">专业</span>${fv(edu.major)}</div>
+    <div class="field-row"><span class="field-key">年级</span>${fv(edu.grade)}</div>
+    <div class="field-row"><span class="field-key">GPA</span>${fv(edu.gpa)}</div>
+    <div class="field-row"><span class="field-key">排名/荣誉</span>${fv(edu.rank)}</div>`;
+
+  document.getElementById('m-contact').innerHTML=`
+    <div class="field-row"><span class="field-key">联系方式</span>${fv(s.contact)}</div>
+    <div class="field-row"><span class="field-key">申请季</span>${s.season?seasonBadge(s.season):`<span class="field-val empty">未定</span>`}</div>
+    <div class="field-row"><span class="field-key">目标方向</span>${fv(s.target)}</div>
+    <div class="field-row"><span class="field-key">建档时间</span><span class="field-val" style="font-family:'DM Mono',monospace;font-size:11px">${new Date(s.createdAt).toLocaleDateString('zh-CN')}</span></div>`;
+  renderLanguage(s);
+}
+
+function renderLanguage(s){
+  const lang=s.language||{};
+  document.getElementById('m-language').innerHTML=`
+    <div class="field-row"><span class="field-key">雅思 IELTS</span>${fv(lang.ielts)}</div>
+    <div class="field-row"><span class="field-key">托福 TOEFL</span>${fv(lang.toefl)}</div>
+    <div class="field-row"><span class="field-key">四六级 CET</span>${fv(lang.cet)}</div>
+    <div class="field-row"><span class="field-key">GRE / GMAT</span>${fv(lang.gre)}</div>`;
+}
+
+function renderActivities(s){
+  document.getElementById('m-competition').innerHTML=tvToEntries(s.competition?.text);
+  document.getElementById('m-internship').innerHTML=tvToEntries(s.internship?.text);
+  document.getElementById('m-research').innerHTML=tvToEntries(s.research?.text);
+  document.getElementById('m-exchange').innerHTML=tvToEntries(s.exchange?.text);
+}
+
+// ══ FILES ══
+function renderFiles(s){
+  const files=s.files||[];
+  const el=document.getElementById('files-list');
+  if(!files.length){ el.innerHTML=`<div style="font-size:12px;color:var(--text-muted);padding:8px 0">暂无文件，请上传</div>`; return; }
+  el.innerHTML=files.map((f,i)=>`
+    <div class="file-item">
+      <div class="file-icon">${fileIcon(f.name)}</div>
+      <div class="file-name" title="${f.name}">${f.name}</div>
+      <div class="file-size">${formatSize(f.size)}</div>
+      <a class="file-download" href="${f.data}" download="${f.name}">下载</a>
+      <button class="file-del" onclick="deleteFile(${i})" title="删除">×</button>
+    </div>`).join('');
+}
+
+function fileIcon(name){
+  const ext=(name.split('.').pop()||'').toLowerCase();
+  if(['pdf'].includes(ext)) return '📄';
+  if(['doc','docx'].includes(ext)) return '📝';
+  if(['jpg','jpeg','png'].includes(ext)) return '🖼️';
+  return '📎';
+}
+function formatSize(bytes){ if(bytes<1024) return bytes+'B'; if(bytes<1024*1024) return (bytes/1024).toFixed(1)+'KB'; return (bytes/1024/1024).toFixed(1)+'MB'; }
+
+function handleFileUpload(e){
+  const s=students.find(x=>x.id===currentId); if(!s) return;
+  if(!s.files) s.files=[];
+  const files=Array.from(e.target.files);
+  let loaded=0;
+  files.forEach(file=>{
+    if(file.size>5*1024*1024){ showToast('文件过大（最大5MB）：'+file.name); loaded++; return; }
+    const reader=new FileReader();
+    reader.onload=ev=>{
+      s.files.push({ name:file.name, size:file.size, data:ev.target.result, date:new Date().toISOString() });
+      loaded++;
+      if(loaded===files.length){ s.updatedAt=Date.now(); save(); renderFiles(s); showToast('✓ 文件已上传'); }
+    };
+    reader.readAsDataURL(file);
+  });
+  e.target.value='';
+}
+
+function deleteFile(idx){
+  const s=students.find(x=>x.id===currentId); if(!s) return;
+  s.files.splice(idx,1); s.updatedAt=Date.now(); save(); renderFiles(s); showToast('文件已删除');
+}
+
+// ══ TODOS ══
+function renderTodos(s){
+  const todos=s.todos||[];
+  const el=document.getElementById('p-todos-list');
+  if(!todos.length){ el.innerHTML=`<div style="font-size:12px;color:var(--text-muted);padding:8px 0">暂无待办，在下方添加</div>`; return; }
+  const today=new Date(); today.setHours(0,0,0,0);
+  el.innerHTML=todos.map((t,i)=>{
+    let dueHtml='';
+    if(t.due){
+      const d=new Date(t.due);
+      const diff=Math.ceil((d-today)/(1000*60*60*24));
+      const cls=diff<0?'overdue':diff<=3?'soon':'ok';
+      const label=diff<0?`逾期${-diff}天`:diff===0?'今天':diff===1?'明天':`${diff}天后`;
+      dueHtml=`<span class="todo-due ${cls}">${label}</span>`;
+    }
+    return `<div class="todo-item ${t.done?'done':''}">
+      <div class="todo-cb ${t.done?'checked':''}" onclick="toggleTodo(${i})">${t.done?'✓':''}</div>
+      <div class="todo-text ${t.done?'done':''}">${t.text}</div>
+      ${dueHtml}
+      <button class="todo-del" onclick="deleteTodo(${i})">×</button>
+    </div>`;
+  }).join('');
+}
+
+function addTodo(){
+  const text=document.getElementById('todo-input').value.trim();
+  if(!text) return;
+  const due=document.getElementById('todo-due').value;
+  const s=students.find(x=>x.id===currentId); if(!s) return;
+  if(!s.todos) s.todos=[];
+  s.todos.push({ text, due:due||null, done:false, createdAt:new Date().toISOString() });
+  s.updatedAt=Date.now(); save();
+  renderTodos(s); renderPanelHero(s); updateCounts();
+  document.getElementById('todo-input').value='';
+  document.getElementById('todo-due').value='';
+  showToast('✓ 待办已添加');
+}
+
+function toggleTodo(idx){
+  const s=students.find(x=>x.id===currentId); if(!s) return;
+  s.todos[idx].done=!s.todos[idx].done;
+  s.updatedAt=Date.now(); save(); renderTodos(s); renderPanelHero(s); updateCounts();
+}
+
+function deleteTodo(idx){
+  const s=students.find(x=>x.id===currentId); if(!s) return;
+  s.todos.splice(idx,1); s.updatedAt=Date.now(); save(); renderTodos(s); renderPanelHero(s); updateCounts();
+}
+
+function renderGlobalTodos(){
+  const board=document.getElementById('global-todo-board');
+  const studentsWithTodos=students.filter(s=>(s.todos||[]).some(t=>!t.done));
+  if(!studentsWithTodos.length){
+    board.innerHTML=`<div style="grid-column:1/-1"><div class="empty-state"><div class="empty-icon">✓</div><div class="empty-text">所有待办已完成！</div></div></div>`;
+    return;
+  }
+  const today=new Date(); today.setHours(0,0,0,0);
+  board.innerHTML=studentsWithTodos.map(s=>{
+    const pending=(s.todos||[]).filter(t=>!t.done);
+    return `<div class="todo-col">
+      <div class="todo-col-head">
+        <div class="avatar" style="background:${avatarColor(s.name)};width:26px;height:26px;font-size:12px">${s.name.slice(0,1)}</div>
+        <div class="todo-col-title">${s.name}</div>
+        <span class="todo-col-count">${pending.length}</span>
+      </div>
+      <div class="todo-col-body">
+        ${pending.map((t,i)=>{
+          let dueHtml='';
+          if(t.due){
+            const d=new Date(t.due);
+            const diff=Math.ceil((d-today)/(1000*60*60*24));
+            const cls=diff<0?'overdue':diff<=3?'soon':'ok';
+            const label=diff<0?`逾期${-diff}天`:diff===0?'今天':diff===1?'明天':`${diff}天后`;
+            dueHtml=`<span class="todo-due ${cls}" style="font-size:10px">${label}</span>`;
+          }
+          return `<div class="todo-item" style="cursor:pointer" onclick="openPanel('${s.id}')">
+            <div style="font-size:16px">•</div>
+            <div class="todo-text" style="font-size:12px">${t.text}</div>
+            ${dueHtml}
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ══ NOTES ══
+function renderNotes(s){
+  const notes=s.notes||[];
+  const el=document.getElementById('notes-list');
+  if(!notes.length){ el.innerHTML=`<div style="font-size:12px;color:var(--text-muted);font-style:italic;padding:8px 0;margin-bottom:10px">暂无沟通记录</div>`; return; }
+  el.innerHTML=[...notes].reverse().map(n=>`
+    <div class="note-item">
+      <div class="note-date">${new Date(n.date).toLocaleString('zh-CN',{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'})}</div>
+      <div class="note-text">${n.text.replace(/\n/g,'<br>')}</div>
+    </div>`).join('');
+}
+
+function addNote(){
+  const text=document.getElementById('note-input').value.trim(); if(!text) return;
+  const s=students.find(x=>x.id===currentId); if(!s) return;
+  if(!s.notes) s.notes=[];
+  s.notes.push({text,date:new Date().toISOString()});
+  s.updatedAt=Date.now(); save(); renderNotes(s); renderPanelHero(s); renderTable();
+  document.getElementById('note-input').value='';
+  showToast('✓ 沟通记录已添加');
+}
+
+// ══ EDIT MODULE ══
+function editModule(mod){
+  const s=students.find(x=>x.id===currentId); if(!s) return;
+  editingModule=mod;
+  const titles={education:'编辑教育背景',language:'编辑语言成绩',competition:'编辑竞赛经历',internship:'编辑实习经历',research:'编辑科研经历',exchange:'编辑交流交换'};
+  document.getElementById('edit-modal-title').textContent=titles[mod]||'编辑';
+  const body=document.getElementById('edit-modal-body');
+  if(mod==='education'){
+    const e=s.education||{};
+    body.innerHTML=`
+      <div class="emod-row">
+        <div class="emod-group"><div class="emod-label">学校</div><input class="emod-input" id="em-school" value="${e.school||''}"></div>
+        <div class="emod-group"><div class="emod-label">专业</div><input class="emod-input" id="em-major" value="${e.major||''}"></div>
+      </div>
+      <div class="emod-row">
+        <div class="emod-group"><div class="emod-label">年级</div><input class="emod-input" id="em-grade" value="${e.grade||''}"></div>
+        <div class="emod-group"><div class="emod-label">GPA</div><input class="emod-input" id="em-gpa" value="${e.gpa||''}"></div>
+      </div>
+      <div class="emod-group"><div class="emod-label">排名/荣誉</div><input class="emod-input" id="em-rank" value="${e.rank||''}"></div>`;
+  } else if(mod==='language'){
+    const l=s.language||{};
+    body.innerHTML=`
+      <div class="emod-row">
+        <div class="emod-group"><div class="emod-label">雅思 IELTS</div><input class="emod-input" id="em-ielts" value="${l.ielts||''}"></div>
+        <div class="emod-group"><div class="emod-label">托福 TOEFL</div><input class="emod-input" id="em-toefl" value="${l.toefl||''}"></div>
+      </div>
+      <div class="emod-row">
+        <div class="emod-group"><div class="emod-label">四六级</div><input class="emod-input" id="em-cet" value="${l.cet||''}"></div>
+        <div class="emod-group"><div class="emod-label">GRE/GMAT</div><input class="emod-input" id="em-gre" value="${l.gre||''}"></div>
+      </div>`;
+  } else if(mod==='basic'){
+    body.innerHTML=`
+      <div class="emod-row">
+        <div class="emod-group"><div class="emod-label">姓名</div><input class="emod-input" id="em-name" value="${s.name||''}"></div>
+        <div class="emod-group"><div class="emod-label">性别</div>
+          <select class="emod-input" id="em-gender">
+            <option value="">不填</option>
+            <option value="男" ${s.gender==='男'?'selected':''}>男</option>
+            <option value="女" ${s.gender==='女'?'selected':''}>女</option>
+          </select>
+        </div>
+      </div>
+      <div class="emod-row" style="margin-top:10px">
+        <div class="emod-group"><div class="emod-label">联系方式（微信/手机）</div>
+          <input class="emod-input" id="em-contact" value="${s.contact||''}" placeholder="微信号或手机">
+        </div>
+        <div class="emod-group"><div class="emod-label">申请季</div>
+          <select class="emod-input" id="em-season-basic">
+            <option value="">未定</option>
+            ${['27Fall','28Fall','29Fall','30Fall'].map(v=>`<option value="${v}" ${s.season===v?'selected':''}>${v}</option>`).join('')}
+          </select>
+        </div>
+      </div>`;
+  } else {
+    const textMap={competition:'竞赛经历',internship:'实习经历',research:'科研经历',exchange:'交流交换'};
+    const val=s[mod]?.text||'';
+    body.innerHTML=`<div class="emod-group"><div class="emod-label">${textMap[mod]}（每行一条记录）</div><textarea class="emod-textarea" id="em-text" style="min-height:160px">${val}</textarea></div>`;
+  }
+  document.getElementById('edit-modal').classList.add('open');
+}
+
+function closeEditModal(){ document.getElementById('edit-modal').classList.remove('open'); editingModule=null; }
+
+function saveModuleEdit(){
+  const s=students.find(x=>x.id===currentId); if(!s||!editingModule) return;
+  const mod=editingModule;
+  if(mod==='education'){
+    s.education={ school:document.getElementById('em-school').value.trim(), major:document.getElementById('em-major').value.trim(), grade:document.getElementById('em-grade').value.trim(), gpa:document.getElementById('em-gpa').value.trim(), rank:document.getElementById('em-rank').value.trim() };
+  } else if(mod==='language'){
+    s.language={ ielts:document.getElementById('em-ielts').value.trim(), toefl:document.getElementById('em-toefl').value.trim(), cet:document.getElementById('em-cet').value.trim(), gre:document.getElementById('em-gre').value.trim() };
+  } else if(mod==='basic'){
+    s.name=document.getElementById('em-name').value.trim()||s.name;
+    s.gender=document.getElementById('em-gender').value;
+    s.contact=document.getElementById('em-contact').value.trim();
+    s.season=document.getElementById('em-season-basic').value;
+  } else {
+    s[mod]={ text:document.getElementById('em-text').value.trim() };
+  }
+  s.updatedAt=Date.now(); save(); closeEditModal();
+  renderPanelHero(s);
+  if(currentPTab==='overview') renderOverview(s);
+  if(currentPTab==='activities') renderActivities(s);
+  renderTable(); renderDash();
+  showToast('✓ 已保存');
+}
+
+// ══ RESUME - PANEL ══
+function buildStudentContext(s){
+  const lines=[];
+  lines.push(`【学生姓名】${s.name}${s.gender?' ('+s.gender+')':''}`);
+  if(s.season) lines.push(`【申请季】${s.season}`);
+  if(s.target) lines.push(`【目标方向】${s.target}`);
+  const edu=s.education||{};
+  if(edu.school||edu.major){
+    lines.push(`\n【教育背景】`);
+    if(edu.school) lines.push(`学校：${edu.school}`);
+    if(edu.major) lines.push(`专业：${edu.major}`);
+    if(edu.grade) lines.push(`年级：${edu.grade}`);
+    if(edu.gpa) lines.push(`GPA：${edu.gpa}`);
+    if(edu.rank) lines.push(`排名：${edu.rank}`);
+  }
+  const lang=s.language||{};
+  const langItems=[lang.ielts&&`雅思：${lang.ielts}`,lang.toefl&&`托福：${lang.toefl}`,lang.cet&&`四六级：${lang.cet}`,lang.gre&&`GRE/GMAT：${lang.gre}`].filter(Boolean);
+  if(langItems.length) lines.push(`\n【语言成绩】\n`+langItems.join('\n'));
+  if(s.competition?.text) lines.push(`\n【竞赛经历】\n${s.competition.text}`);
+  if(s.internship?.text) lines.push(`\n【实习经历】\n${s.internship.text}`);
+  if(s.research?.text) lines.push(`\n【科研经历】\n${s.research.text}`);
+  if(s.exchange?.text) lines.push(`\n【交流交换】\n${s.exchange.text}`);
+  return lines.join('\n');
+}
+
+function setupResumeTab(s){
+  document.getElementById('p-resume-context').value=buildStudentContext(s);
+  document.getElementById('p-resume-result').style.display='none';
+  document.getElementById('p-resume-extra').value='';
+  pResumeLang='英文';
+  document.querySelectorAll('#p-lang-tabs .lang-tab').forEach((t,i)=>t.classList[i===0?'add':'remove']('active'));
+}
+
+function setPLang(el,lang){
+  document.querySelectorAll('#p-lang-tabs .lang-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active'); pResumeLang=lang;
+}
+function pickPStyle(el,style){
+  document.querySelectorAll('#p-style-row .style-chip').forEach(c=>c.classList.remove('sel'));
+  el.classList.add('sel'); pResumeStyle=style;
+}
+
+async function genStudentResume(){
+  const context=document.getElementById('p-resume-context').value.trim();
+  if(!context){ showToast('请先填写学生背景'); return; }
+  const extra=document.getElementById('p-resume-extra').value.trim();
+  const isZh=pResumeLang==='中文';
+  const resultWrap=document.getElementById('p-resume-result');
+  const resultBody=document.getElementById('p-resume-body');
+  const statusEl=document.getElementById('p-resume-status');
+  const btn=document.getElementById('p-gen-btn');
+  resultWrap.style.display='block';
+  resultBody.innerHTML='<div class="loading-dots"><span></span><span></span><span></span></div>';
+  statusEl.textContent='AI 生成中…'; btn.disabled=true;
+
+  const prompt=isZh
+    ? `你是专业的留学申请顾问，请根据以下中国本科学生的背景信息，生成一份专业的中文简历。\n\n润色规则：请用 STAR 法则隐性嵌入（情境/任务/行动/结果），每一条经历都总结成一句，突出「做了什么 → 怎么做 → 带来什么结果」，并增加量化指标和具体的软件工具、技术栈。以本科生的能力为边界，在不虚构具体事实的前提下，可合理推断数据量化补齐，用「XXX」、「约 X 万条」、「约 X 次」等方式填补量化指标。有逻辑地整理成几个简历条目，每条用动词开头。\n\n风格：${pResumeStyle}\n${extra?'补充要求：'+extra+'\n':''}\n学生背景：\n${context}\n\n要求：\n1. 中文简历格式，模块清晰\n2. 只输出简历内容，不加解释`
+    : `You are a professional study abroad advisor. Generate a professional English CV/Resume for the following student.\n\nWriting rule: Apply STAR method implicitly (Situation/Task/Action/Result) in each bullet. Each point: what was done -> how -> what result. Add quantified metrics and specific tools/tech stack. Stay within undergraduate capability bounds; use reasonable estimates like 'approx. X' to fill quantification gaps. Organize logically into bullet points, each starting with an action verb.\n\nStyle: ${pResumeStyle}\n${extra?'Additional requirements: '+extra+'\n':''}\nStudent background:\n${context}\n\nOutput resume content only.`;
+
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1500,messages:[{role:'user',content:prompt}]})});
+    const data=await res.json();
+    const text=data.content?.map(i=>i.text||'').join('')||'生成失败，请重试';
+    resultBody.textContent=text;
+    statusEl.textContent=`${pResumeLang}简历 · ${pResumeStyle}`;
+    const s=students.find(x=>x.id===currentId);
+    if(s){ s.updatedAt=Date.now(); save(); }
+  }catch(e){
+    resultBody.textContent='请求失败，请检查网络后重试。';
+    statusEl.textContent='生成失败';
+  }
+  btn.disabled=false;
+}
+function clearStudentResume(){ document.getElementById('p-resume-result').style.display='none'; document.getElementById('p-resume-extra').value=''; }
+function copyPResume(){ navigator.clipboard.writeText(document.getElementById('p-resume-body').textContent).then(()=>showToast('✓ 已复制')); }
+
+function deleteStudent(){
+  if(!confirm('确认删除该学生档案？此操作不可撤销。')) return;
+  students=students.filter(x=>x.id!==currentId);
+  save(); closePanel(); renderDash(); renderTable(); showToast('学生档案已删除');
+}
+
+// ══ RESUME TOOL PAGE ══
+function populateRTSelect(){
+  const sel=document.getElementById('rt-stu-sel');
+  sel.innerHTML='<option value="">— 选择学生 —</option>'+students.map(s=>`<option value="${s.id}">${s.name} · ${s.education?.school||'未填学校'}</option>`).join('');
+}
+function loadRTStudent(){
+  const id=document.getElementById('rt-stu-sel').value;
+  const box=document.getElementById('rt-preview-box');
+  if(!id){ box.style.display='none'; return; }
+  const s=students.find(x=>x.id===id); if(!s) return;
+  document.getElementById('rt-context').value=buildStudentContext(s);
+  box.style.display='block';
+}
+function setRTLang(el,lang){
+  document.querySelectorAll('.lang-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active'); rtLang=lang;
+}
+function pickRTStyle(el,style){
+  document.querySelectorAll('#rt-style-row .style-chip').forEach(c=>c.classList.remove('sel'));
+  el.classList.add('sel'); rtStyle=style;
+}
+
+async function genRT(){
+  const context=document.getElementById('rt-context').value.trim();
+  if(!context){ showToast('请先选择学生或填写背景信息'); return; }
+  const extra=document.getElementById('rt-extra').value.trim();
+  const isZh=rtLang==='中文';
+  const resultWrap=document.getElementById('rt-result-wrap');
+  const resultBody=document.getElementById('rt-result-body');
+  const statusEl=document.getElementById('rt-status');
+  const btn=document.getElementById('rt-gen-btn');
+  resultWrap.style.display='block';
+  resultBody.innerHTML='<div class="loading-dots"><span></span><span></span><span></span></div>';
+  statusEl.textContent='AI 生成中…'; btn.disabled=true;
+
+  const prompt=isZh
+    ? `你是专业的留学申请顾问，请根据以下学生背景，生成专业中文简历。\n\n润色规则：请用 STAR 法则隐性嵌入（情境/任务/行动/结果），每一条经历都总结成一句，突出「做了什么 → 怎么做 → 带来什么结果」，并增加量化指标和具体的软件工具、技术栈。以本科生的能力为边界，在不虚构具体事实的前提下，可合理推断数据量化补齐，用「XXX」、「约 X 万条」、「约 X 次」等方式填补量化指标。有逻辑地整理成几个简历条目，每条用动词开头。\n\n风格：${rtStyle}\n${extra?'补充要求：'+extra+'\n':''}\n${context}\n\n只输出简历内容，格式清晰，不加解释。`
+    : `You are a professional study abroad advisor. Generate a professional English resume.\n\nWriting rule: Apply STAR method implicitly (Situation/Task/Action/Result) in each bullet. Each point: what was done -> how -> what result. Add quantified metrics and specific tools/tech stack. Stay within undergraduate capability bounds; use reasonable estimates like 'approx. X' to fill quantification gaps. Organize logically into bullet points, each starting with an action verb.\n\nStyle: ${rtStyle}\n${extra?'Requirements: '+extra+'\n':''}\n${context}\n\nOutput resume content only.`;
+
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1500,messages:[{role:'user',content:prompt}]})});
+    const data=await res.json();
+    const text=data.content?.map(i=>i.text||'').join('')||'生成失败，请重试';
+    resultBody.textContent=text;
+    statusEl.textContent=`${rtLang}简历 · ${rtStyle}`;
+  }catch(e){
+    resultBody.textContent='请求失败，请检查网络后重试。';
+    statusEl.textContent='生成失败';
+  }
+  btn.disabled=false;
+}
+function clearRT(){
+  document.getElementById('rt-stu-sel').value='';
+  document.getElementById('rt-preview-box').style.display='none';
+  document.getElementById('rt-result-wrap').style.display='none';
+  document.getElementById('rt-extra').value='';
+}
+function copyRT(){ navigator.clipboard.writeText(document.getElementById('rt-result-body').textContent).then(()=>showToast('✓ 已复制')); }
+
+// ══ EXCEL EXPORT ══
+function downloadTemplate(){
+  const NEWLINE = '\n';
+  const esc=v=>{const s=String(v==null?'':v);return (s.includes(',')||s.includes('"'))?'"'+s.replace(/"/g,'""')+'"':s;};
+  const headers=['姓名','性别(男/女)','联系方式','申请季(如27Fall)','目标方向','本科学校','专业','年级','GPA','排名荣誉','雅思','托福','四六级','GRE_GMAT','竞赛经历(换行用|)','实习经历(换行用|)','科研经历(换行用|)','交流交换(换行用|)'];
+  const example=['张三','女','wxid_example','27Fall','CS/数据科学','中山大学','计算机科学','大三/2026届','3.7/4.0','专业前10%','7.0 (R7.5 L7.5 W6.5 S6.5)','105','六级580','GRE 328+4.0','美赛MCM一等奖2024|全国英语竞赛二等奖','腾讯产品实习2024暑假','NLP科研助理张教授2023-2024','多伦多大学交换2023秋季'];
+  const BOM = '\uFEFF';
+  const csvContent = BOM + headers.map(esc).join(',') + NEWLINE + example.map(esc).join(',');
+  const blob=new Blob([csvContent],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='留学规划_批量导入模板.csv';
+  a.click(); URL.revokeObjectURL(a.href);
+  showToast('✓ 模板已下载，用 Excel 打开填写后上传');
+}
+function parseCSV(text){
+  const rows=[];
+  const lines=text.split(/\r?\n/);
+  for(const line of lines){
+    if(!line.trim()) continue;
+    const fields=[]; let cur='', inQ=false;
+    for(let i=0;i<line.length;i++){
+      const c=line[i];
+      if(c==='"'){ if(inQ&&line[i+1]==='"'){cur+='"';i++;} else {inQ=!inQ;} }
+      else if(c===','&&!inQ){fields.push(cur.trim());cur='';}
+      else cur+=c;
+    }
+    fields.push(cur.trim());
+    rows.push(fields);
+  }
+  return rows;
+}
+
+function batchImport(e){
+  const file=e.target.files[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    try{
+      const text=ev.target.result.replace(/^\uFEFF/,'');
+      const rows=parseCSV(text);
+      if(rows.length<2){showToast('文件为空或格式不对');return;}
+      const hdrs=rows[0];
+      const idx=h=>hdrs.indexOf(h);
+      let count=0;
+      for(let i=1;i<rows.length;i++){
+        const r=rows[i];
+        const g=j=>j>=0&&j<r.length?(r[j]||'').trim():'';
+        const name=g(idx('姓名')); if(!name) continue;
+        const school=g(idx('本科学校'));
+        if(students.find(s=>s.name===name&&(s.education?.school||'')===school)) continue;
+        const toText=v=>v.replace(/\|/g,'\n').trim();
+        const s={
+          id:uid(), name,
+          gender:g(idx('性别(男/女)')),
+          contact:g(idx('联系方式')),
+          status:'',
+          season:g(idx('申请季(如27Fall)')),
+          target:g(idx('目标方向')),
+          education:{school,major:g(idx('专业')),grade:g(idx('年级')),gpa:g(idx('GPA')),rank:g(idx('排名荣誉'))},
+          language:{ielts:g(idx('雅思')),toefl:g(idx('托福')),cet:g(idx('四六级')),gre:g(idx('GRE_GMAT'))},
+          competition:{text:toText(g(idx('竞赛经历(换行用|)')))},
+          internship:{text:toText(g(idx('实习经历(换行用|)')))},
+          research:{text:toText(g(idx('科研经历(换行用|)')))},
+          exchange:{text:toText(g(idx('交流交换(换行用|)')))},
+          notes:[],todos:[],files:[],
+          createdAt:Date.now(),updatedAt:Date.now(),
+        };
+        students.unshift(s); count++;
+      }
+      save(); closeAddModal(); renderDash(); renderTable();
+      showToast('✓ 成功导入 '+count+' 位学生');
+    }catch(err){
+      showToast('导入失败，请检查文件格式');
+      console.error(err);
+    }
+  };
+  reader.readAsText(file,'UTF-8');
+  e.target.value='';
+}
+function exportExcel(){
+  if(!students.length){ showToast('暂无学生数据可导出'); return; }
+  const NEWLINE = '\n';
+  const headers=['姓名','性别','联系方式','申请季','目标方向','学校','专业','年级','GPA','排名荣誉','雅思','托福','四六级','GRE_GMAT','竞赛经历','实习经历','科研经历','交流交换','沟通记录数','最近沟通','待办未完成','建档时间','最近更新'];
+  const esc=v=>{const s=String(v==null?'':v);return (s.includes(',')||s.includes('"')||s.includes('\n'))?'"'+s.replace(/"/g,'""')+'"':s;};
+  const rows=students.map(s=>[
+    s.name, s.gender||'', s.contact||'', s.season||'', s.target||'',
+    s.education?.school||'', s.education?.major||'', s.education?.grade||'', s.education?.gpa||'', s.education?.rank||'',
+    s.language?.ielts||'', s.language?.toefl||'', s.language?.cet||'', s.language?.gre||'',
+    (s.competition?.text||'').replace(/\n/g,'|'),
+    (s.internship?.text||'').replace(/\n/g,'|'),
+    (s.research?.text||'').replace(/\n/g,'|'),
+    (s.exchange?.text||'').replace(/\n/g,'|'),
+    (s.notes||[]).length,
+    s.notes?.length ? new Date(s.notes[s.notes.length-1].date).toLocaleDateString('zh-CN') : '',
+    (s.todos||[]).filter(t=>!t.done).length,
+    new Date(s.createdAt).toLocaleDateString('zh-CN'),
+    new Date(s.updatedAt||s.createdAt).toLocaleDateString('zh-CN'),
+  ].map(esc).join(','));
+  const BOM = '\uFEFF';
+  const csvContent = BOM + headers.map(esc).join(',') + NEWLINE + rows.join(NEWLINE);
+  const blob=new Blob([csvContent],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='留学规划_学生档案_'+new Date().toLocaleDateString('zh-CN').replace(/\//g,'')+'.csv';
+  a.click(); URL.revokeObjectURL(a.href);
+  showToast('✓ 已导出 CSV（可直接用 Excel 打开）');
+}
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2400);
+}
+
+// ══ INIT ══
+load(); renderDash();
+</script>
+</body>
+</html>
