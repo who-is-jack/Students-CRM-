@@ -296,7 +296,17 @@ td{padding:10px 14px;vertical-align:middle}
     <div class="nav-item" onclick="gotoView('resume-tool',this)"><span class="nav-ico">✦</span> 简历生成 AI</div>
     <div class="nav-item" onclick="exportExcel()"><span class="nav-ico">↓</span> 导出 Excel</div>
   </div>
-  <div class="sidebar-bottom">数据存于本地浏览器<br>六大背景模块 · v2.0</div>
+  <div class="sidebar-bottom">
+  <div style="margin-bottom:8px;color:rgba(232,238,248,0.45);font-size:9.5px;letter-spacing:0.1em;text-transform:uppercase">Anthropic API Key</div>
+  <div style="display:flex;gap:5px;align-items:center">
+    <input id="api-key-input" type="password" placeholder="sk-ant-..." 
+      style="flex:1;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);border-radius:6px;padding:5px 8px;font-size:11px;color:#e8eef8;outline:none;font-family:'DM Mono',monospace;width:0"
+      oninput="saveApiKey()" value="">
+    <button onclick="toggleApiKeyVis()" style="background:none;border:none;color:rgba(232,238,248,0.4);cursor:pointer;font-size:13px;padding:2px 4px;flex-shrink:0" id="api-eye-btn">👁</button>
+  </div>
+  <div id="api-key-status" style="font-size:10px;margin-top:5px;color:rgba(232,238,248,0.28)">未设置</div>
+  <div style="margin-top:10px;color:rgba(232,238,248,0.22);font-size:9.5px;line-height:1.7">数据存于本地浏览器<br>六大背景模块 · v2.0</div>
+</div>
 </nav>
 
 <!-- MAIN -->
@@ -1236,8 +1246,11 @@ async function genStudentResume(){
     : `You are a professional study abroad advisor. Generate a professional English CV/Resume for the following student.\n\nWriting rule: Apply STAR method implicitly (Situation/Task/Action/Result) in each bullet. Each point: what was done -> how -> what result. Add quantified metrics and specific tools/tech stack. Stay within undergraduate capability bounds; use reasonable estimates like 'approx. X' to fill quantification gaps. Organize logically into bullet points, each starting with an action verb.\n\nStyle: ${pResumeStyle}\n${extra?'Additional requirements: '+extra+'\n':''}\nStudent background:\n${context}\n\nOutput resume content only.`;
 
   try{
-    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1500,messages:[{role:'user',content:prompt}]})});
+    const apiKey=getApiKey();
+    if(!apiKey){ resultBody.textContent='请先在左下角填写 Anthropic API Key（sk-ant-...）'; statusEl.textContent='未设置 API Key'; btn.disabled=false; return; }
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1500,messages:[{role:'user',content:prompt}]})});
     const data=await res.json();
+    if(data.error){ resultBody.textContent='API 错误：'+data.error.message; statusEl.textContent='请求失败'; btn.disabled=false; return; }
     const text=data.content?.map(i=>i.text||'').join('')||'生成失败，请重试';
     resultBody.textContent=text;
     statusEl.textContent=`${pResumeLang}简历 · ${pResumeStyle}`;
@@ -1298,8 +1311,11 @@ async function genRT(){
     : `You are a professional study abroad advisor. Generate a professional English resume.\n\nWriting rule: Apply STAR method implicitly (Situation/Task/Action/Result) in each bullet. Each point: what was done -> how -> what result. Add quantified metrics and specific tools/tech stack. Stay within undergraduate capability bounds; use reasonable estimates like 'approx. X' to fill quantification gaps. Organize logically into bullet points, each starting with an action verb.\n\nStyle: ${rtStyle}\n${extra?'Requirements: '+extra+'\n':''}\n${context}\n\nOutput resume content only.`;
 
   try{
-    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1500,messages:[{role:'user',content:prompt}]})});
+    const apiKey2=getApiKey();
+    if(!apiKey2){ resultBody.textContent='请先在左下角填写 Anthropic API Key（sk-ant-...）'; statusEl.textContent='未设置 API Key'; btn.disabled=false; return; }
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':apiKey2,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1500,messages:[{role:'user',content:prompt}]})});
     const data=await res.json();
+    if(data.error){ resultBody.textContent='API 错误：'+data.error.message; statusEl.textContent='请求失败'; btn.disabled=false; return; }
     const text=data.content?.map(i=>i.text||'').join('')||'生成失败，请重试';
     resultBody.textContent=text;
     statusEl.textContent=`${rtLang}简历 · ${rtStyle}`;
@@ -1431,7 +1447,36 @@ function showToast(msg){
 }
 
 // ══ INIT ══
-load(); renderDash();
+load(); renderDash(); loadApiKey();
+
+function loadApiKey(){
+  var k=localStorage.getItem('sacrm_apikey')||'';
+  var inp=document.getElementById('api-key-input');
+  if(inp){ inp.value=k; updateApiKeyStatus(k); }
+}
+function saveApiKey(){
+  var k=document.getElementById('api-key-input').value.trim();
+  localStorage.setItem('sacrm_apikey',k);
+  updateApiKeyStatus(k);
+}
+function updateApiKeyStatus(k){
+  var el=document.getElementById('api-key-status');
+  if(!el) return;
+  if(k && k.startsWith('sk-ant-')){
+    el.textContent='✓ 已设置'; el.style.color='#5b8dd9';
+  } else if(k){
+    el.textContent='格式有误（应以 sk-ant- 开头）'; el.style.color='#e87070';
+  } else {
+    el.textContent='未设置'; el.style.color='rgba(232,238,248,0.28)';
+  }
+}
+function toggleApiKeyVis(){
+  var inp=document.getElementById('api-key-input');
+  inp.type = inp.type==='password' ? 'text' : 'password';
+}
+function getApiKey(){
+  return localStorage.getItem('sacrm_apikey')||'';
+}
 </script>
 </body>
 </html>
