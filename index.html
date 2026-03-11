@@ -262,6 +262,13 @@ td{padding:10px 14px;vertical-align:middle}
 .todo-col-count{font-family:'DM Mono',monospace;font-size:10px;background:var(--sky-pale);color:var(--steel);padding:1px 7px;border-radius:99px}
 .todo-col-body{padding:12px}
 
+.confirm-overlay{display:none;position:fixed;inset:0;background:rgba(15,31,61,0.5);z-index:500;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+.confirm-overlay.open{display:flex}
+.confirm-box{background:var(--surface);border-radius:14px;padding:28px 28px 22px;width:340px;box-shadow:var(--shadow-lg);animation:modIn 0.2s ease;text-align:center}
+.confirm-icon{font-size:32px;margin-bottom:10px}
+.confirm-title{font-family:'Lora',serif;font-size:16px;font-weight:600;color:var(--navy);margin-bottom:8px}
+.confirm-msg{font-size:13px;color:var(--text-soft);line-height:1.7;margin-bottom:20px}
+.confirm-btns{display:flex;gap:10px;justify-content:center}
 .toast{position:fixed;bottom:28px;right:28px;background:var(--navy);color:white;padding:11px 18px;border-radius:9px;font-size:13px;z-index:999;transform:translateY(70px);opacity:0;transition:all 0.25s cubic-bezier(0.34,1.56,0.64,1);pointer-events:none;box-shadow:var(--shadow-md)}
 .toast.show{transform:translateY(0);opacity:1}
 .empty-state{text-align:center;padding:48px 20px;color:var(--text-muted)}
@@ -275,6 +282,12 @@ td{padding:10px 14px;vertical-align:middle}
 .s-29fall{background:#ede8fa;color:#6a5acd;border:1px solid rgba(106,90,205,0.2)}
 .s-30fall{background:#fdefd9;color:#d4772a;border:1px solid rgba(212,119,42,0.2)}
 .s-other{background:#f0f0f0;color:#888;border:1px solid #ddd}
+.s-completed{background:#e8f5ee;color:#3a7a5a;border:1px solid rgba(58,122,90,0.25)}
+.btn-complete{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:99px;font-size:12px;font-family:'Noto Sans SC',sans-serif;cursor:pointer;border:1.5px solid rgba(255,255,255,0.25);background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.85);transition:all 0.18s;font-weight:500;margin-top:12px}
+.btn-complete:hover{background:rgba(58,210,120,0.25);border-color:rgba(58,210,120,0.6);color:#7ef5b0}
+.btn-complete.done{background:rgba(58,210,120,0.2);border-color:rgba(58,210,120,0.5);color:#7ef5b0}
+.btn-complete.done:hover{background:rgba(255,100,100,0.15);border-color:rgba(255,120,120,0.5);color:#ffaaaa}
+.completed-ribbon{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-family:'DM Mono',monospace;background:rgba(58,210,120,0.15);color:#7ef5b0;padding:2px 10px;border-radius:99px;border:1px solid rgba(58,210,120,0.3)}
 </style>
 </head>
 <body>
@@ -330,7 +343,7 @@ td{padding:10px 14px;vertical-align:middle}
         <div class="stat-card"><div class="stat-label">学生总数</div><div class="stat-val" id="st-total">0</div><div class="stat-sub">在管档案</div></div>
         <div class="stat-card"><div class="stat-label">27Fall</div><div class="stat-val" id="st-prep" style="color:var(--sage)">0</div><div class="stat-sub">申请季学生</div></div>
         <div class="stat-card"><div class="stat-label">28Fall</div><div class="stat-val" id="st-active" style="color:var(--sky)">0</div><div class="stat-sub">申请季学生</div></div>
-        <div class="stat-card"><div class="stat-label">待办未完成</div><div class="stat-val" id="st-todo" style="color:var(--rose)">0</div><div class="stat-sub">需要跟进</div></div>
+        <div class="stat-card"><div class="stat-label">已完成申请</div><div class="stat-val" id="st-done" style="color:var(--sage)">0</div><div class="stat-sub">累计完成</div></div>
       </div>
       <div class="list-card">
         <div class="list-head"><div class="list-head-title">最近更新</div></div>
@@ -350,6 +363,7 @@ td{padding:10px 14px;vertical-align:middle}
             <div class="ftab season" onclick="setFilter('season','28Fall',this)">28Fall</div>
             <div class="ftab season" onclick="setFilter('season','29Fall',this)">29Fall</div>
             <div class="ftab season" onclick="setFilter('season','30Fall',this)">30Fall</div>
+            <div class="ftab season" onclick="setFilter('season','completed',this)" style="border-left:1px solid var(--border);margin-left:4px;padding-left:12px">✓ 已完成</div>
           </div>
         </div>
         <div id="stu-table"></div>
@@ -500,6 +514,7 @@ td{padding:10px 14px;vertical-align:middle}
       <div class="panel-name" id="p-name"></div>
       <div class="panel-school" id="p-school"></div>
       <div class="panel-meta" id="p-meta"></div>
+      <button class="btn-complete" id="p-complete-btn" onclick="toggleComplete()"></button>
     </div>
     <div class="panel-tabs">
       <div class="ptab active" onclick="switchPTab('overview',this)">背景总览</div>
@@ -630,6 +645,18 @@ td{padding:10px 14px;vertical-align:middle}
 
 <div class="toast" id="toast"></div>
 
+<div class="confirm-overlay" id="confirm-overlay">
+  <div class="confirm-box">
+    <div class="confirm-icon" id="confirm-icon">✓</div>
+    <div class="confirm-title" id="confirm-title"></div>
+    <div class="confirm-msg" id="confirm-msg"></div>
+    <div class="confirm-btns">
+      <button class="btn btn-ghost" onclick="confirmResolve(false)" id="confirm-cancel-btn">取消</button>
+      <button class="btn btn-primary" onclick="confirmResolve(true)" id="confirm-ok-btn">确认</button>
+    </div>
+  </div>
+</div>
+
 <script>
 // ══ DATA ══
 const SK = 'sacrm_v3';
@@ -699,7 +726,7 @@ function renderTableData(data,container){
       <td><div class="stu-name" style="font-size:12px">${s.education?.school||'—'}</div><div class="stu-sub">${s.education?.major||'—'}</div></td>
       <td style="font-family:'DM Mono',monospace;font-size:12px;color:var(--navy-mid)">${s.education?.gpa||'—'}</td>
       <td style="font-size:12px;color:var(--text-mid)">${lang}</td>
-      <td>${s.season?seasonBadge(s.season):'<span style="color:var(--text-muted);font-size:11px">未定</span>'}</td>
+      <td>${s.completed?'<span class="completed-ribbon">✓ 已完成</span>'+(s.season?' <span style="font-size:10px;color:var(--text-muted)">'+s.season+'</span>':''):(s.season?seasonBadge(s.season):'<span style="color:var(--text-muted);font-size:11px">未定</span>')}</td>
       <td><div class="module-dots">${dotHtml}</div></td>
       <td style="font-family:'DM Mono',monospace;font-size:10.5px;color:var(--text-muted)">${new Date(s.updatedAt||s.createdAt).toLocaleDateString('zh-CN')}</td>
     </tr>`;
@@ -709,7 +736,13 @@ function renderTableData(data,container){
 
 function renderTable(){
   let data = [...students];
-  if(currentFilter.season!=='all') data=data.filter(s=>s.season===currentFilter.season);
+  if(currentFilter.season==='completed'){
+    data=data.filter(function(s){return s.completed===true;});
+  } else if(currentFilter.season!=='all'){
+    data=data.filter(function(s){return !s.completed && s.season===currentFilter.season;});
+  } else {
+    data=data.filter(function(s){return !s.completed;});
+  }
   const q=document.getElementById('search-input').value.trim().toLowerCase();
   if(q) data=data.filter(s=>s.name.toLowerCase().includes(q)||(s.education?.school||'').toLowerCase().includes(q)||(s.education?.major||'').toLowerCase().includes(q));
   data.sort((a,b)=>(b.updatedAt||b.createdAt)-(a.updatedAt||a.createdAt));
@@ -719,11 +752,11 @@ function renderTable(){
 
 function renderDash(){
   document.getElementById('st-total').textContent=students.length;
-  document.getElementById('st-prep').textContent=students.filter(s=>s.season==='27Fall').length;
-  document.getElementById('st-active').textContent=students.filter(s=>s.season==='28Fall').length;
-  const pendingTodos=students.reduce((sum,s)=>sum+(s.todos||[]).filter(t=>!t.done).length,0);
-  document.getElementById('st-todo').textContent=pendingTodos;
-  const recent=[...students].sort((a,b)=>(b.updatedAt||b.createdAt)-(a.updatedAt||a.createdAt)).slice(0,8);
+  document.getElementById('st-prep').textContent=students.filter(function(s){return s.season==='27Fall'&&!s.completed;}).length;
+  document.getElementById('st-active').textContent=students.filter(function(s){return s.season==='28Fall'&&!s.completed;}).length;
+  document.getElementById('st-done').textContent=students.filter(function(s){return s.completed;}).length;
+
+  const recent=[...students].sort(function(a,b){return (b.updatedAt||b.createdAt)-(a.updatedAt||a.createdAt);}).slice(0,8);
   renderTableData(recent,document.getElementById('dash-table'));
   updateCounts();
 }
@@ -797,6 +830,46 @@ function openPanel(id){
   document.getElementById('panel-overlay').classList.add('open');
 }
 function closePanel(){ document.getElementById('panel-overlay').classList.remove('open'); }
+
+var _confirmResolve=null;
+function showConfirm(icon,title,msg,okText,okClass){
+  return new Promise(function(resolve){
+    _confirmResolve=resolve;
+    document.getElementById('confirm-icon').textContent=icon;
+    document.getElementById('confirm-title').textContent=title;
+    document.getElementById('confirm-msg').textContent=msg;
+    var okBtn=document.getElementById('confirm-ok-btn');
+    okBtn.textContent=okText||'确认';
+    okBtn.className='btn '+(okClass||'btn-primary');
+    document.getElementById('confirm-overlay').classList.add('open');
+  });
+}
+function confirmResolve(val){
+  document.getElementById('confirm-overlay').classList.remove('open');
+  if(_confirmResolve){ _confirmResolve(val); _confirmResolve=null; }
+}
+
+function toggleComplete(){
+  var s=students.find(function(x){return x.id===currentId;}); if(!s) return;
+  if(s.completed){
+    showConfirm('↩','撤销完成状态？','该学生将重新出现在原申请季列表中','撤销','btn-ghost').then(function(ok){
+      if(!ok) return;
+      s.completed=false;
+      s.updatedAt=Date.now(); save();
+      renderPanelHero(s); renderTable(); renderDash();
+      showToast('已撤销完成状态');
+    });
+  } else {
+    showConfirm('🎉','标记为已完成申请？','该学生将移入「已完成」分类，从原申请季列表消失','确认完成','btn-sky').then(function(ok){
+      if(!ok) return;
+      s.completed=true;
+      s.completedAt=Date.now();
+      s.updatedAt=Date.now(); save();
+      renderPanelHero(s); renderTable(); renderDash();
+      showToast('✓ 已标记为完成申请');
+    });
+  }
+}
 function handlePanelClick(e){ if(e.target===document.getElementById('panel-overlay')) closePanel(); }
 
 function renderPanelHero(s){
@@ -812,6 +885,14 @@ function renderPanelHero(s){
     s.language?.toefl&&`<span class="panel-meta-tag">托福 ${s.language.toefl}</span>`,
   ].filter(Boolean).join('');
   document.getElementById('p-meta').innerHTML=meta;
+  var btn=document.getElementById('p-complete-btn');
+  if(s.completed){
+    btn.textContent='↩ 撤销完成';
+    btn.className='btn-complete done';
+  } else {
+    btn.textContent='✓ 完成申请';
+    btn.className='btn-complete';
+  }
   // todo badge
   const pending=(s.todos||[]).filter(t=>!t.done).length;
   const tb=document.getElementById('p-todo-badge');
