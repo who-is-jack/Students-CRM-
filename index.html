@@ -163,12 +163,16 @@ td{padding:10px 14px;vertical-align:middle}
 .entry-add-btn:hover{border-color:var(--sky);color:var(--sky);background:var(--sky-pale)}
 
 /* NOTES */
-.note-item{background:var(--surface2);border-left:3px solid var(--sky);border-radius:0 8px 8px 0;padding:10px 13px;margin-bottom:8px}
-.note-date{font-family:'DM Mono',monospace;font-size:10px;color:var(--text-muted);margin-bottom:3px}
-.note-text{font-size:13px;color:var(--text-mid);line-height:1.7}
-.note-add{display:flex;gap:8px;margin-top:10px}
-.note-add textarea{flex:1;border:1px solid var(--border);border-radius:8px;padding:9px 12px;font-size:13px;font-family:'Noto Sans SC',sans-serif;resize:none;height:68px;outline:none;background:var(--bg);transition:border-color 0.15s}
+.note-item{background:var(--surface2);border-left:3px solid var(--sky);border-radius:0 8px 8px 0;padding:10px 13px;margin-bottom:8px;position:relative}
+.note-date{font-family:'DM Mono',monospace;font-size:10px;color:var(--text-muted);margin-bottom:3px;padding-right:36px}
+.note-text{font-size:13px;color:var(--text-mid);line-height:1.7;white-space:pre-wrap}
+.note-del{position:absolute;top:8px;right:8px;background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:15px;padding:2px 5px;border-radius:4px;line-height:1;transition:all 0.14s;opacity:0}
+.note-item:hover .note-del{opacity:1}
+.note-del:hover{color:var(--rose);background:var(--rose-pale)}
+.note-add{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+.note-add textarea{width:100%;border:1px solid var(--border);border-radius:8px;padding:9px 12px;font-size:13px;font-family:'Noto Sans SC',sans-serif;resize:none;min-height:68px;max-height:320px;outline:none;background:var(--bg);transition:border-color 0.15s,height 0.1s;overflow-y:auto;line-height:1.7}
 .note-add textarea:focus{border-color:var(--sky);background:white}
+.note-add-foot{display:flex;justify-content:flex-end}
 
 /* FILES */
 .file-item{display:flex;align-items:center;gap:10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:9px 12px;margin-bottom:7px}
@@ -589,8 +593,11 @@ td{padding:10px 14px;vertical-align:middle}
       <div class="tab-content" id="tab-notes">
         <div id="notes-list"></div>
         <div class="note-add">
-          <textarea id="note-input" placeholder="记录本次沟通…"></textarea>
-          <button class="btn btn-primary btn-sm" style="align-self:flex-end" onclick="addNote()">添加</button>
+          <textarea id="note-input" placeholder="记录本次沟通…" oninput="autoGrow(this)" onkeydown="if(event.ctrlKey&&event.key==='Enter')addNote()"></textarea>
+          <div class="note-add-foot">
+            <span style="font-size:11px;color:var(--text-muted);margin-right:auto;align-self:center">Ctrl + Enter 快速提交</span>
+            <button class="btn btn-primary btn-sm" onclick="addNote()">添加记录</button>
+          </div>
         </div>
       </div>
 
@@ -1143,12 +1150,22 @@ function renderGlobalTodos(){
 function renderNotes(s){
   const notes=s.notes||[];
   const el=document.getElementById('notes-list');
-  if(!notes.length){ el.innerHTML=`<div style="font-size:12px;color:var(--text-muted);font-style:italic;padding:8px 0;margin-bottom:10px">暂无沟通记录</div>`; return; }
-  el.innerHTML=[...notes].reverse().map(n=>`
-    <div class="note-item">
-      <div class="note-date">${new Date(n.date).toLocaleString('zh-CN',{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'})}</div>
-      <div class="note-text">${n.text.replace(/\n/g,'<br>')}</div>
-    </div>`).join('');
+  if(!notes.length){ el.innerHTML='<div style="font-size:12px;color:var(--text-muted);font-style:italic;padding:8px 0;margin-bottom:10px">暂无沟通记录</div>'; return; }
+  // show newest first, but keep track of original index for deletion
+  el.innerHTML=[...notes].map((n,i)=>({n,i})).reverse().map(({n,i})=>
+    '<div class="note-item">'+
+    '<button class="note-del" onclick="deleteNote('+i+')" title="删除">×</button>'+
+    '<div class="note-date">'+new Date(n.date).toLocaleString('zh-CN',{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'})+'</div>'+
+    '<div class="note-text">'+n.text.replace(/</g,'&lt;')+'</div>'+
+    '</div>'
+  ).join('');
+}
+
+function deleteNote(idx){
+  const s=students.find(x=>x.id===currentId); if(!s) return;
+  s.notes.splice(idx,1);
+  s.updatedAt=Date.now(); save(); renderNotes(s); renderPanelHero(s); renderTable();
+  showToast('沟通记录已删除');
 }
 
 function addNote(){
@@ -1157,7 +1174,8 @@ function addNote(){
   if(!s.notes) s.notes=[];
   s.notes.push({text,date:new Date().toISOString()});
   s.updatedAt=Date.now(); save(); renderNotes(s); renderPanelHero(s); renderTable();
-  document.getElementById('note-input').value='';
+  const inp=document.getElementById('note-input');
+  inp.value=''; inp.style.height='68px';
   showToast('✓ 沟通记录已添加');
 }
 
@@ -1529,6 +1547,11 @@ function showToast(msg){
 
 // ══ INIT ══
 load(); renderDash(); loadApiKey();
+
+function autoGrow(el){
+  el.style.height='auto';
+  el.style.height=(el.value ? Math.min(el.scrollHeight, 320) : 68)+'px';
+}
 
 function loadApiKey(){
   var k=localStorage.getItem('sacrm_apikey')||'';
