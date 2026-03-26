@@ -314,12 +314,22 @@ td{padding:10px 14px;vertical-align:middle}
     <div class="nav-item" onclick="exportExcel()"><span class="nav-ico">↓</span> 导出 Excel</div>
   </div>
   <div class="sidebar-bottom">
-  <div style="margin-bottom:8px;color:rgba(232,238,248,0.45);font-size:9.5px;letter-spacing:0.1em;text-transform:uppercase">Anthropic API Key</div>
+  <div style="margin-bottom:8px;color:rgba(232,238,248,0.45);font-size:9.5px;letter-spacing:0.1em;text-transform:uppercase">AI 简历生成</div>
+  <div style="display:flex;gap:4px;margin-bottom:8px">
+    <button id="provider-claude" onclick="setProvider('claude')"
+      style="flex:1;padding:4px 0;border-radius:6px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.12);color:#e8eef8;font-size:11px;cursor:pointer;font-family:'Noto Sans SC',sans-serif;transition:all 0.15s">
+      Claude
+    </button>
+    <button id="provider-gemini" onclick="setProvider('gemini')"
+      style="flex:1;padding:4px 0;border-radius:6px;border:1px solid rgba(255,255,255,0.08);background:transparent;color:rgba(232,238,248,0.45);font-size:11px;cursor:pointer;font-family:'Noto Sans SC',sans-serif;transition:all 0.15s">
+      Gemini
+    </button>
+  </div>
   <div style="display:flex;gap:5px;align-items:center">
-    <input id="api-key-input" type="password" placeholder="sk-ant-..." 
+    <input id="api-key-input" type="password" placeholder="sk-ant-..."
       style="flex:1;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);border-radius:6px;padding:5px 8px;font-size:11px;color:#e8eef8;outline:none;font-family:'DM Mono',monospace;width:0"
       oninput="saveApiKey()" value="">
-    <button onclick="toggleApiKeyVis()" style="background:none;border:none;color:rgba(232,238,248,0.4);cursor:pointer;font-size:13px;padding:2px 4px;flex-shrink:0" id="api-eye-btn">👁</button>
+    <button onclick="toggleApiKeyVis()" style="background:none;border:none;color:rgba(232,238,248,0.4);cursor:pointer;font-size:13px;padding:2px 4px;flex-shrink:0">👁</button>
   </div>
   <div id="api-key-status" style="font-size:10px;margin-top:5px;color:rgba(232,238,248,0.28)">未设置</div>
   <div style="margin-top:10px;color:rgba(232,238,248,0.22);font-size:9.5px;line-height:1.7">数据存于本地浏览器<br>六大背景模块 · v2.0</div>
@@ -1345,12 +1355,10 @@ async function genStudentResume(){
     : `You are a professional study abroad advisor. Generate a professional English CV/Resume for the following student.\n\nWriting rule: Apply STAR method implicitly (Situation/Task/Action/Result) in each bullet. Each point: what was done -> how -> what result. Add quantified metrics and specific tools/tech stack. Stay within undergraduate capability bounds; use reasonable estimates like 'approx. X' to fill quantification gaps. Organize logically into bullet points, each starting with an action verb.\n\nStyle: ${pResumeStyle}\n${extra?'Additional requirements: '+extra+'\n':''}\nStudent background:\n${context}\n\nOutput resume content only.`;
 
   try{
-    const apiKey=getApiKey();
-    if(!apiKey){ resultBody.textContent='请先在左下角填写 Anthropic API Key（sk-ant-...）'; statusEl.textContent='未设置 API Key'; btn.disabled=false; return; }
-    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1500,messages:[{role:'user',content:prompt}]})});
-    const data=await res.json();
-    if(data.error){ resultBody.textContent='API 错误：'+data.error.message; statusEl.textContent='请求失败'; btn.disabled=false; return; }
-    const text=data.content?.map(i=>i.text||'').join('')||'生成失败，请重试';
+    if(!getApiKey()){ resultBody.textContent='请先在左下角填写 API Key'; statusEl.textContent='未设置 API Key'; btn.disabled=false; return; }
+    const aiRes=await callAI(prompt,1500);
+    if(aiRes.error){ resultBody.textContent='API 错误：'+aiRes.error; statusEl.textContent='请求失败'; btn.disabled=false; return; }
+    const text=aiRes.text;
     resultBody.textContent=text;
     statusEl.textContent=`${pResumeLang}简历 · ${pResumeStyle}`;
     const s=students.find(x=>x.id===currentId);
@@ -1410,12 +1418,10 @@ async function genRT(){
     : `You are a professional study abroad advisor. Generate a professional English resume.\n\nWriting rule: Apply STAR method implicitly (Situation/Task/Action/Result) in each bullet. Each point: what was done -> how -> what result. Add quantified metrics and specific tools/tech stack. Stay within undergraduate capability bounds; use reasonable estimates like 'approx. X' to fill quantification gaps. Organize logically into bullet points, each starting with an action verb.\n\nStyle: ${rtStyle}\n${extra?'Requirements: '+extra+'\n':''}\n${context}\n\nOutput resume content only.`;
 
   try{
-    const apiKey2=getApiKey();
-    if(!apiKey2){ resultBody.textContent='请先在左下角填写 Anthropic API Key（sk-ant-...）'; statusEl.textContent='未设置 API Key'; btn.disabled=false; return; }
-    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':apiKey2,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1500,messages:[{role:'user',content:prompt}]})});
-    const data=await res.json();
-    if(data.error){ resultBody.textContent='API 错误：'+data.error.message; statusEl.textContent='请求失败'; btn.disabled=false; return; }
-    const text=data.content?.map(i=>i.text||'').join('')||'生成失败，请重试';
+    if(!getApiKey()){ resultBody.textContent='请先在左下角填写 API Key'; statusEl.textContent='未设置 API Key'; btn.disabled=false; return; }
+    const aiRes2=await callAI(prompt,1500);
+    if(aiRes2.error){ resultBody.textContent='API 错误：'+aiRes2.error; statusEl.textContent='请求失败'; btn.disabled=false; return; }
+    const text=aiRes2.text;
     resultBody.textContent=text;
     statusEl.textContent=`${rtLang}简历 · ${rtStyle}`;
   }catch(e){
@@ -1553,33 +1559,82 @@ function autoGrow(el){
   el.style.height=(el.value ? Math.min(el.scrollHeight, 320) : 68)+'px';
 }
 
-function loadApiKey(){
-  var k=localStorage.getItem('sacrm_apikey')||'';
+var currentProvider='claude';
+
+function setProvider(p){
+  currentProvider=p;
+  localStorage.setItem('sacrm_provider',p);
+  // update button styles
+  var isGemini=p==='gemini';
+  var btnC=document.getElementById('provider-claude');
+  var btnG=document.getElementById('provider-gemini');
+  if(btnC){ btnC.style.background=isGemini?'transparent':'rgba(255,255,255,0.12)'; btnC.style.borderColor=isGemini?'rgba(255,255,255,0.08)':'rgba(255,255,255,0.2)'; btnC.style.color=isGemini?'rgba(232,238,248,0.45)':'#e8eef8'; }
+  if(btnG){ btnG.style.background=isGemini?'rgba(255,255,255,0.12)':'transparent'; btnG.style.borderColor=isGemini?'rgba(255,255,255,0.2)':'rgba(255,255,255,0.08)'; btnG.style.color=isGemini?'#e8eef8':'rgba(232,238,248,0.45)'; }
+  // update placeholder & stored key
   var inp=document.getElementById('api-key-input');
-  if(inp){ inp.value=k; updateApiKeyStatus(k); }
+  if(inp){
+    inp.placeholder=isGemini?'AIza...':'sk-ant-...';
+    var k=localStorage.getItem(isGemini?'sacrm_gemini_key':'sacrm_apikey')||'';
+    inp.value=k; updateApiKeyStatus(k);
+  }
+}
+function loadApiKey(){
+  var p=localStorage.getItem('sacrm_provider')||'claude';
+  currentProvider=p;
+  setProvider(p);
 }
 function saveApiKey(){
   var k=document.getElementById('api-key-input').value.trim();
-  localStorage.setItem('sacrm_apikey',k);
+  var storeKey=currentProvider==='gemini'?'sacrm_gemini_key':'sacrm_apikey';
+  localStorage.setItem(storeKey,k);
   updateApiKeyStatus(k);
 }
 function updateApiKeyStatus(k){
   var el=document.getElementById('api-key-status');
   if(!el) return;
-  if(k && k.startsWith('sk-ant-')){
+  var isGemini=currentProvider==='gemini';
+  var validPrefix=isGemini?'AIza':'sk-ant-';
+  if(k && k.startsWith(validPrefix)){
     el.textContent='✓ 已设置'; el.style.color='#5b8dd9';
   } else if(k){
-    el.textContent='格式有误（应以 sk-ant- 开头）'; el.style.color='#e87070';
+    el.textContent='格式有误（应以 '+validPrefix+' 开头）'; el.style.color='#e87070';
   } else {
     el.textContent='未设置'; el.style.color='rgba(232,238,248,0.28)';
   }
 }
 function toggleApiKeyVis(){
   var inp=document.getElementById('api-key-input');
-  inp.type = inp.type==='password' ? 'text' : 'password';
+  inp.type=inp.type==='password'?'text':'password';
 }
 function getApiKey(){
-  return localStorage.getItem('sacrm_apikey')||'';
+  var storeKey=currentProvider==='gemini'?'sacrm_gemini_key':'sacrm_apikey';
+  return localStorage.getItem(storeKey)||'';
+}
+async function callAI(prompt,maxTokens){
+  var key=getApiKey();
+  if(!key) return {error:'no_key'};
+  if(currentProvider==='gemini'){
+    var model='gemini-2.0-flash';
+    var res=await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+model+':generateContent?key='+key,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({contents:[{parts:[{text:prompt}]}],generationConfig:{maxOutputTokens:maxTokens||1500}})
+    });
+    var data=await res.json();
+    if(data.error) return {error:data.error.message};
+    var text=(data.candidates&&data.candidates[0]&&data.candidates[0].content&&data.candidates[0].content.parts&&data.candidates[0].content.parts[0]&&data.candidates[0].content.parts[0].text)||'生成失败，请重试';
+    return {text:text};
+  } else {
+    var res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:maxTokens||1500,messages:[{role:'user',content:prompt}]})
+    });
+    var data=await res.json();
+    if(data.error) return {error:data.error.message};
+    var text=(data.content&&data.content.map(function(i){return i.text||'';}).join(''))||'生成失败，请重试';
+    return {text:text};
+  }
 }
 </script>
 </body>
